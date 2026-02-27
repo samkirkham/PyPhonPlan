@@ -2,31 +2,22 @@
 Task dynamics example
 """
 
-from pyphonplan import Gesture, solve_task_dynamics
-from pyphonplan.taskdynamics.solver import build_blended_params
-from pyphonplan.viz import plot_trajectory, plot_blended_params
+from pyphonplan import TaskDynamics
 
-# Two overlapping gestures
-gestures = [
-    Gesture(target=5.0, stiffness=100.0, start=0.05, end=0.25),
-    Gesture(target=-3.0, stiffness=80.0, start=0.15, end=0.40),
-]
+# initialise simulation object with start/end times and time-step
+# if end time exceeds the final gesture end time then it will return to a neural value of 0, to avoid this make sure that t_end matches the final gesture end time
+td = TaskDynamics(t_start=0.0, t_end=0.5, dt=0.001)
 
-time, position, velocity = solve_task_dynamics(
-    gestures,
-    t_start=0.0,
-    t_end=0.5,
-    dt=0.001,
-    initial_position=0.0,
-    neutral_target=0.0,
-)
+# add two gestures with different targets, stiffnesses, timings and alphas
+# note that an alpha ratio of 1:100 means that gesture 2 will dominate during blending
+td.add_gesture(target=5.0, k=2000.0, alpha=1, start=0.05, end=0.25)
+td.add_gesture(target=-5.0, k=2000.0, alpha=100, start=0.15, end=0.40)
+td.solve()
 
+# plot tract variable and velocity
+td.plot(abs_velocity=True)
 
-# Build blended params
-blended_k, blended_target, blended_damping = build_blended_params(
-    gestures, time, neutral_target=0.0
-)
-
-# Plots
-plot_trajectory(time, position, velocity)
-plot_blended_params(time, blended_k, blended_target, blended_damping)
+# plot (blended) parameter values over time
+# default is params=["target", "k", "damping"]
+td.plot_params()
+td.plot_params(params=["target", "k"])
