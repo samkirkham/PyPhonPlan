@@ -66,16 +66,16 @@ class Targets:
     def __init__(
         self,
         field,
-        positions: list[float],
+        positions: list[float] | None = None,
         activation: np.ndarray | None = None,
     ):
         self.x = field.x
         self.time = field.time
         self.activation = activation if activation is not None else field.activation
-        self.positions = positions
+        self.positions = positions if positions is not None else []
         self.traces: list[TargetTrace] = []
 
-        for pos in positions:
+        for pos in self.positions:
             idx = _find_closest_idx(self.x, pos)
             trace = TargetTrace(
                 position=pos,
