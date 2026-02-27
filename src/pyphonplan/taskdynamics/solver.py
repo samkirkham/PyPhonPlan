@@ -196,6 +196,64 @@ class TaskDynamics:
         self.blended_target = blended_target
         self.blended_damping = blended_damping
 
+    def solve_from_trace(self, time, target, k=None, damping=None):
+        """Solve task dynamics from a pre-computed target trace.
+
+        Drives the task dynamic ODE with a time-varying target and constant
+        spring parameters. Useful for feeding the output of
+        ``Targets.peak_activation()`` directly into the task dynamic model.
+
+        Parameters
+        ----------
+        time : np.ndarray
+            Time array (must be regularly spaced).
+        target : np.ndarray
+            Target position at each timestep. Same length as *time*.
+        k : float or None
+            Spring stiffness. Defaults to ``self.neutral_stiffness``.
+        damping : float or None
+            Damping coefficient. Defaults to ``2*sqrt(k)`` (critical damping).
+        """
+        time = np.asarray(time, dtype=float)
+        target = np.asarray(target, dtype=float)
+        if time.shape != target.shape:
+            raise ValueError("time and target must have the same length")
+
+        if k is None:
+            k = self.neutral_stiffness
+        if damping is None:
+            damping = 2.0 * np.sqrt(k)
+
+        dt = time[1] - time[0]
+        t_start = time[0]
+        t_end = time[-1]
+
+        blended_k = np.full_like(time, k)
+        blended_damping = np.full_like(time, damping)
+
+        def _ode(t, state):
+            idx = int((t - t_start) / dt)
+            idx = max(0, min(idx, len(time) - 1))
+            return _sm89(t, state, k, damping, target[idx])
+
+        sol = solve_ivp(
+            _ode,
+            [t_start, t_end],
+            [self.initial_position, self.initial_velocity],
+            method=self.method,
+            t_eval=time,
+            max_step=dt,
+        )
+        if not sol.success:
+            raise RuntimeError(f"Task dynamics solve failed: {sol.message}")
+
+        self.time = time
+        self.position = sol.y[0]
+        self.velocity = sol.y[1]
+        self.blended_k = blended_k
+        self.blended_target = target
+        self.blended_damping = blended_damping
+
     def _check_solved(self):
         if self.time is None:
             raise RuntimeError("Call solve() before plotting.")
