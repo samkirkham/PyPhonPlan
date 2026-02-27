@@ -4,7 +4,7 @@ from pyphonplan.field.inputs import GaussianInput
 from pyphonplan.field.field import DynamicField
 from pyphonplan.field.coupled import FieldSystem
 from pyphonplan.targets.targets import TargetTrace, Targets
-from pyphonplan.taskdynamics.solver import Gesture, solve_task_dynamics
+from pyphonplan.taskdynamics.solver import Gesture, TaskDynamics
 
 __all__ = [
     "GaussianInput",
@@ -13,5 +13,5 @@ __all__ = [
     "TargetTrace",
     "Targets",
     "Gesture",
-    "solve_task_dynamics",
+    "TaskDynamics",
 ]
