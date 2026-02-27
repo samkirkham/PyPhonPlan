@@ -4,13 +4,17 @@ Standalone solver for articulatory trajectories driven by gestural
 specifications. Extracted from pygest, stripped of pandas dependencies.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np
 from scipy.integrate import solve_ivp
 
+from pyphonplan.viz.task_plots import plot_trajectory, plot_blended_params
 
-NEUTRAL_STIFFNESS = 4.0
+
+NEUTRAL_STIFFNESS = 2000.0
 
 
 @dataclass
@@ -21,8 +25,8 @@ class Gesture:
     ----------
     target : float
         Target position for this gesture.
-    stiffness : float
-        Spring stiffness (k).
+    k : float
+        Spring stiffness.
     damping : float or None
         Damping coefficient. If None, auto-set to 2*sqrt(k) (critical damping).
     start : float
@@ -34,7 +38,7 @@ class Gesture:
     """
 
     target: float
-    stiffness: float
+    k: float
     damping: float | None = None
     start: float = 0.0
     end: float = 0.0
@@ -42,7 +46,7 @@ class Gesture:
 
     def __post_init__(self):
         if self.damping is None:
-            self.damping = 2.0 * np.sqrt(self.stiffness)
+            self.damping = 2.0 * np.sqrt(self.k)
 
 
 def _sm89(t, state, k, b, target):
@@ -54,7 +58,7 @@ def _sm89(t, state, k, b, target):
     return [v, -b * v - k * (x - target)]
 
 
-def build_blended_params(
+def _build_blended_params(
     gestures: list[Gesture],
     time: np.ndarray,
     neutral_target: float = 0.0,
@@ -65,22 +69,6 @@ def build_blended_params(
     When multiple gestures overlap, their parameters are blended via
     alpha-weighted averaging. When no gesture is active, neutral
     attractor parameters apply.
-
-    Parameters
-    ----------
-    gestures : list[Gesture]
-        List of gesture specifications.
-    time : np.ndarray
-        Time array in seconds.
-    neutral_target : float
-        Rest position when no gesture is active.
-    neutral_stiffness : float
-        Stiffness of the neutral attractor.
-
-    Returns
-    -------
-    tuple of (np.ndarray, np.ndarray, np.ndarray)
-        (blended_k, blended_target, blended_damping) arrays.
     """
     n = len(time)
     neutral_damping = 2.0 * np.sqrt(neutral_stiffness)
@@ -99,7 +87,7 @@ def build_blended_params(
             continue
         active = (time >= g.start) & (time <= g.end)
         weight_sum[active] += g.alpha
-        k_sum[active] += g.stiffness * g.alpha
+        k_sum[active] += g.k * g.alpha
         target_sum[active] += g.target * g.alpha
         damping_sum[active] += g.damping * g.alpha  # type: ignore[operator]  # __post_init__ guarantees non-None
 
@@ -112,60 +100,134 @@ def build_blended_params(
     return blended_k, blended_target, blended_damping
 
 
-def solve_task_dynamics(
-    gestures: list[Gesture],
-    t_start: float = 0.0,
-    t_end: float = 1.0,
-    dt: float = 0.001,
-    initial_position: float = 0.0,
-    initial_velocity: float = 0.0,
-    neutral_target: float = 0.0,
-    neutral_stiffness: float = NEUTRAL_STIFFNESS,
-    method: str = "LSODA",
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Solve task dynamics for a set of gestures.
+class TaskDynamics:
+    """OO interface for task dynamic simulation.
 
-    Parameters
-    ----------
-    gestures : list[Gesture]
-        Gestural specifications with timing and parameters.
-    t_start, t_end : float
-        Time range in seconds.
-    dt : float
-        Time step for output.
-    initial_position, initial_velocity : float
-        Initial state.
-    neutral_target : float
-        Rest position when no gesture is active.
-    neutral_stiffness : float
-        Stiffness of the neutral attractor.
-    method : str
-        ODE solver method (default LSODA).
+    Usage::
 
-    Returns
-    -------
-    tuple of (np.ndarray, np.ndarray, np.ndarray)
-        (time, position, velocity).
+        td = TaskDynamics(t_start=0.0, t_end=0.5, dt=0.001)
+        td.add_gesture(target=5.0, k=100.0, start=0.05, end=0.25)
+        td.solve()
+        td.plot()
+        td.plot_params()
     """
-    time = np.arange(t_start, t_end + dt / 2, dt)
-    blended_k, blended_target, blended_damping = build_blended_params(
-        gestures, time, neutral_target, neutral_stiffness
-    )
 
-    def _ode(t, state):
-        idx = int((t - t_start) / dt)
-        idx = max(0, min(idx, len(time) - 1))
-        return _sm89(t, state, blended_k[idx], blended_damping[idx], blended_target[idx])
+    def __init__(
+        self,
+        t_start: float = 0.0,
+        t_end: float = 1.0,
+        dt: float = 0.001,
+        initial_position: float = 0.0,
+        initial_velocity: float = 0.0,
+        neutral_target: float = 0.0,
+        neutral_stiffness: float = NEUTRAL_STIFFNESS,
+        method: str = "LSODA",
+    ):
+        self.t_start = t_start
+        self.t_end = t_end
+        self.dt = dt
+        self.initial_position = initial_position
+        self.initial_velocity = initial_velocity
+        self.neutral_target = neutral_target
+        self.neutral_stiffness = neutral_stiffness
+        self.method = method
 
-    sol = solve_ivp(
-        _ode,
-        [t_start, t_end],
-        [initial_position, initial_velocity],
-        method=method,
-        t_eval=time,
-        max_step=dt,
-    )
-    if not sol.success:
-        raise RuntimeError(f"Task dynamics solve failed: {sol.message}")
+        self._gestures: list[Gesture] = []
 
-    return time, sol.y[0], sol.y[1]
+        # Populated by solve()
+        self.time: np.ndarray | None = None
+        self.position: np.ndarray | None = None
+        self.velocity: np.ndarray | None = None
+        self.blended_k: np.ndarray | None = None
+        self.blended_target: np.ndarray | None = None
+        self.blended_damping: np.ndarray | None = None
+
+    def add_gesture(
+        self,
+        target: float,
+        k: float,
+        damping: float | None = None,
+        start: float = 0.0,
+        end: float = 0.0,
+        alpha: float = 1.0,
+    ) -> Gesture:
+        """Create and register a gesture."""
+        g = Gesture(
+            target=target,
+            k=k,
+            damping=damping,
+            start=start,
+            end=end,
+            alpha=alpha,
+        )
+        self._gestures.append(g)
+        return g
+
+    def solve(self):
+        """Compute blended parameters and solve the ODE."""
+        time = np.arange(self.t_start, self.t_end + self.dt / 2, self.dt)
+        blended_k, blended_target, blended_damping = _build_blended_params(
+            self._gestures, time, self.neutral_target, self.neutral_stiffness
+        )
+
+        dt = self.dt
+        t_start = self.t_start
+
+        def _ode(t, state):
+            idx = int((t - t_start) / dt)
+            idx = max(0, min(idx, len(time) - 1))
+            return _sm89(t, state, blended_k[idx], blended_damping[idx], blended_target[idx])
+
+        sol = solve_ivp(
+            _ode,
+            [self.t_start, self.t_end],
+            [self.initial_position, self.initial_velocity],
+            method=self.method,
+            t_eval=time,
+            max_step=self.dt,
+        )
+        if not sol.success:
+            raise RuntimeError(f"Task dynamics solve failed: {sol.message}")
+
+        self.time = time
+        self.position = sol.y[0]
+        self.velocity = sol.y[1]
+        self.blended_k = blended_k
+        self.blended_target = blended_target
+        self.blended_damping = blended_damping
+
+    def _check_solved(self):
+        if self.time is None:
+            raise RuntimeError("Call solve() before plotting.")
+
+    def plot(self, abs_velocity: bool = False, show: bool = True):
+        """Plot position and velocity trajectories.
+
+        Parameters
+        ----------
+        abs_velocity : bool
+            If True, plot absolute velocity instead of signed velocity.
+        """
+        self._check_solved()
+        return plot_trajectory(
+            self.time, self.position, self.velocity,
+            abs_velocity=abs_velocity, show=show,
+        )
+
+    def plot_params(self, params: list[str] | None = None, show: bool = True):
+        """Plot blended parameters.
+
+        Parameters
+        ----------
+        params : list of str or None
+            Subset of ['k', 'target', 'damping'] to plot. None plots all.
+        """
+        self._check_solved()
+        return plot_blended_params(
+            self.time,
+            self.blended_k,
+            self.blended_target,
+            self.blended_damping,
+            params=params,
+            show=show,
+        )
