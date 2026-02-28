@@ -20,7 +20,7 @@ field.add_input("input2", amplitude=5, position=5, width=1.0, start=100, end=200
 field.plot_inputs()
 
 # Solve
-field.solve(t_start=0, t_end=250, dt=1, tau=25.0, h=-2.0, noise=0)
+field.solve(t_start=0, t_end=250, dt=1, tau=25.0, h=-2.0, noise=1.0)
 
 # plot field activation over time and space
 plot_field_heatmap(field.time, field.x, field.activation)
