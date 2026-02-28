@@ -26,8 +26,11 @@ wheels/
   *-blx.bib
   paper/*.pdf
 
+# Identifying author information (for double-blind review); remove this line for final submission and author-info.tex will be injected into camera-ready version
+paper/author-info.tex
+
 # ignore .md files for now and add them back when we have more documentation
 *.md
 
-# ignore paper/ for now!
+# don't track paper for now
 paper/
