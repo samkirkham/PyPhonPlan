@@ -28,3 +28,6 @@ wheels/
 
 # ignore .md files for now and add them back when we have more documentation
 *.md
+
+# ignore paper/ for now!
+paper/
