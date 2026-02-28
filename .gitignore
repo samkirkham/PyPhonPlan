@@ -12,5 +12,19 @@ wheels/
 # macOS
 .DS_Store
 
+# LaTeX build artifacts                                                      
+  *.aux                              
+  *.bbl
+  *.blg
+  *.log
+  *.out
+  *.toc
+  *.fdb_latexmk
+  *.fls
+  *.synctex.gz
+  *.run.xml
+  *-blx.bib
+  paper/*.pdf
+
 # ignore .md files for now and add them back when we have more documentation
 *.md
