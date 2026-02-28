@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "PyPhonPlan: Simulating phonetic planning with dynamic neural fields and task dynamics"
+type: software
+authors:
+  - family-names: Kirkham
+    given-names: Sam
+    email: s.kirkham@lancaster.ac.uk
+    orcid: https://orcid.org/0000-0003-4469-1512
+version: 0.1.0
+date-released: 2026-02-28
+url: https://github.com/samkirkham/PyPhonPlan
+license: MIT
+abstract: ""
+keywords:
+  - phonetics
+  - dynamic field theory
+  - task dynamics
+  - articulatory phonology
+  - computational linguistics
