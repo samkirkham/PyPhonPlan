@@ -68,7 +68,7 @@ def animate_field(
         return line, title
 
     anim = FuncAnimation(
-        fig, _update, frames=u.shape[1], interval=1000 / fps, blit=True
+        fig, _update, frames=u.shape[1], interval=1000 / fps, blit=False
     )
 
     if save_path is not None:
