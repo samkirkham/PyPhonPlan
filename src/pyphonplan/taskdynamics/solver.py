@@ -196,7 +196,7 @@ class TaskDynamics:
         self.blended_target = blended_target
         self.blended_damping = blended_damping
 
-    def solve_from_trace(self, time, target, k=None, damping=None):
+    def solve_from_trace(self, time, target, k=None, damping=None, time_scale=0.001):
         """Solve task dynamics from a pre-computed target trace.
 
         Drives the task dynamic ODE with a time-varying target and constant
@@ -204,10 +204,11 @@ class TaskDynamics:
         ``Targets.peak_activation()``: the active period defines the
         simulation window, with onset mapped to t=0.
 
-        The field's time values are used only to verify uniform spacing
-        (no gaps). The ODE runs on its own time grid: one input sample
-        per ``self.dt``, so the solver's time scale is independent of
-        the field's.
+        ODE duration is derived from the field's time span:
+        ``duration = (time[-1] - time[0]) * time_scale``. The default
+        ``time_scale=0.001`` converts field time steps (ms) to ODE
+        seconds. Each field sample maps by index onto the ODE time grid
+        — no interpolation is needed.
 
         Parameters
         ----------
@@ -219,6 +220,9 @@ class TaskDynamics:
             Spring stiffness. Defaults to ``self.neutral_stiffness``.
         damping : float or None
             Damping coefficient. Defaults to ``2*sqrt(k)`` (critical damping).
+        time_scale : float
+            Multiplier converting field time units to ODE seconds.
+            Default ``0.001`` (field ms → seconds).
 
         Raises
         ------
@@ -244,10 +248,11 @@ class TaskDynamics:
                 "threshold mid-gesture. Check the field activation."
             )
 
-        # Build ODE time grid: one sample per self.dt, independent of field time
-        dt = self.dt
+        # ODE duration derived from field time span
+        duration = (time[-1] - time[0]) * time_scale
         n = len(target)
-        time_solve = np.arange(n) * dt
+        time_solve = np.linspace(0, duration, n)
+        dt = duration / (n - 1)
         t_end = time_solve[-1]
 
         blended_k = np.full(n, k)
