@@ -20,7 +20,7 @@ field.add_input("input2", amplitude=5, position=5, width=1.0, start=100, end=200
 field.plot_inputs()
 
 # Solve
-field.solve(t_start=0, t_end=250, dt=1, tau=25.0, h=-2.0, noise=1.0)
+field.solve(t_start=0, t_end=250, dt=1, tau=25.0, h=-2.0, noise=0)
 
 # plot field activation over time and space
 plot_field_heatmap(field.time, field.x, field.activation)
@@ -28,10 +28,11 @@ plot_field_heatmap(field.time, field.x, field.activation)
 # plot field activation surface                                                          
 plot_field_surface(field.time, field.x, field.activation, threshold=0.0)   
 
+# Animate field activation over time
+animate_field(field.time, field.x, field.activation)
+#animate_field(field.time, field.x, field.activation, save_path="single_field.mp4", show=False)
+
 # Extract targets at input positions
 targets = Targets(field, positions=[-5.0, 5.0])
 plot_target_activations(field.time, targets.traces)
 targets.peak_activation(plot=True)
-
-# Animate field activation over time (save as: save_path="single_field.mp4")
-animate_field(field.time, field.x, field.activation)
