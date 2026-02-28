@@ -200,19 +200,30 @@ class TaskDynamics:
         """Solve task dynamics from a pre-computed target trace.
 
         Drives the task dynamic ODE with a time-varying target and constant
-        spring parameters. Useful for feeding the output of
-        ``Targets.peak_activation()`` directly into the task dynamic model.
+        spring parameters. Designed for ``above_threshold=True`` output from
+        ``Targets.peak_activation()``: the active period defines the
+        simulation window, with onset mapped to t=0.
+
+        The field's time values are used only to verify uniform spacing
+        (no gaps). The ODE runs on its own time grid: one input sample
+        per ``self.dt``, so the solver's time scale is independent of
+        the field's.
 
         Parameters
         ----------
         time : np.ndarray
-            Time array (must be regularly spaced).
+            Time array from peak_activation (must be regularly spaced).
         target : np.ndarray
             Target position at each timestep. Same length as *time*.
         k : float or None
             Spring stiffness. Defaults to ``self.neutral_stiffness``.
         damping : float or None
             Damping coefficient. Defaults to ``2*sqrt(k)`` (critical damping).
+
+        Raises
+        ------
+        ValueError
+            If *time* contains temporal gaps (non-uniform spacing).
         """
         time = np.asarray(time, dtype=float)
         target = np.asarray(target, dtype=float)
@@ -224,30 +235,41 @@ class TaskDynamics:
         if damping is None:
             damping = 2.0 * np.sqrt(k)
 
-        dt = time[1] - time[0]
-        t_start = time[0]
-        t_end = time[-1]
+        # Check for temporal gaps (catches mid-gesture threshold drops)
+        diffs = np.diff(time)
+        if not np.allclose(diffs, diffs[0]):
+            raise ValueError(
+                "time array has temporal gaps (non-uniform spacing). "
+                "This likely means the input activation drops below "
+                "threshold mid-gesture. Check the field activation."
+            )
 
-        blended_k = np.full_like(time, k)
-        blended_damping = np.full_like(time, damping)
+        # Build ODE time grid: one sample per self.dt, independent of field time
+        dt = self.dt
+        n = len(target)
+        time_solve = np.arange(n) * dt
+        t_end = time_solve[-1]
+
+        blended_k = np.full(n, k)
+        blended_damping = np.full(n, damping)
 
         def _ode(t, state):
-            idx = int((t - t_start) / dt)
-            idx = max(0, min(idx, len(time) - 1))
+            idx = int(t / dt)
+            idx = max(0, min(idx, n - 1))
             return _sm89(t, state, k, damping, target[idx])
 
         sol = solve_ivp(
             _ode,
-            [t_start, t_end],
+            [0.0, t_end],
             [self.initial_position, self.initial_velocity],
             method=self.method,
-            t_eval=time,
+            t_eval=time_solve,
             max_step=dt,
         )
         if not sol.success:
             raise RuntimeError(f"Task dynamics solve failed: {sol.message}")
 
-        self.time = time
+        self.time = time_solve
         self.position = sol.y[0]
         self.velocity = sol.y[1]
         self.blended_k = blended_k
