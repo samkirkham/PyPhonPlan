@@ -107,8 +107,10 @@ class FieldSystem:
         source_field : str or None
             Name of the field whose sigmoid drives memory update.
         gamma_gated : bool
-            If True, the self-excitation kernel is gated off when there is no
-            external input (s <= 0).
+            If True, the self-excitation kernel is latched off until direct input
+            arrives (s > 0). The latch stays open while activation exceeds
+            threshold, and activation is clamped at threshold when the latch
+            is closed.
         """
         if field_type == "memory":
             if source_field is None:
@@ -251,6 +253,7 @@ class FieldSystem:
             results[name][:, 0] = state[name]
 
         noise_scale = noise * np.sqrt(dt) if noise > 0 else 0.0
+        gate_latched = {name: False for name in self._field_order}
 
         for i in range(1, n_steps):
             t = self.time[i - 1]
@@ -266,12 +269,18 @@ class FieldSystem:
                     gu = sigmoid(u, spec.sigmoid_beta, spec.sigmoid_threshold)
                     kernel_term = self._dx * convolve(gu, spec.kernel)
                     if spec.gamma_gated:
-                        gate = 1.0 if np.any(s > 0) else 0.0
-                        kernel_term = gate * kernel_term
+                        if np.any(s > 0):
+                            gate_latched[name] = True
+                        elif not np.any(u > spec.sigmoid_threshold):
+                            gate_latched[name] = False
+                        if not gate_latched[name]:
+                            kernel_term *= 0.0
                     dudt = (-u + spec.h + s + coupling + kernel_term) / spec.tau
                     new_u = u + dt * dudt
                     if noise_scale > 0:
                         new_u += (noise_scale / spec.tau) * np.random.normal(0, 1, n)
+                    if spec.gamma_gated and not gate_latched[name]:
+                        new_u = np.minimum(new_u, spec.sigmoid_threshold)
 
                 elif spec.field_type == "memory":
                     source_u = state[spec.source_field]
