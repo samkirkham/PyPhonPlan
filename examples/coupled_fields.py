@@ -60,7 +60,7 @@ sys.add_field("perception", tau=10, h=-2, kernel_params=kperc)
 
 # add couplings
 sys.add_coupling("memory", "planning", weight=10.0)
-sys.add_coupling("perception", "planning", weight=100.0)  # weak: sub-threshold preshaping
+sys.add_coupling("perception", "planning", weight=1.0)  # weak: sub-threshold preshaping
 
 # add inputs to planning and perception field with different timings
 # Response cue drives planning; perception alone should preshape but not trigger
