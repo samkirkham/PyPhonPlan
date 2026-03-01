@@ -31,6 +31,7 @@ class _FieldSpec:
     sigmoid_threshold: float = 0.0
     tau_decay: float | None = None
     source_field: str | None = None
+    gamma_gated: bool = False
     inputs: dict[str, GaussianInput] = dc_field(default_factory=dict)
 
 
@@ -82,6 +83,7 @@ class FieldSystem:
         sigmoid_threshold: float = 0.0,
         tau_decay: float | None = None,
         source_field: str | None = None,
+        gamma_gated: bool = False,
     ):
         """Add a named field to the system.
 
@@ -104,6 +106,9 @@ class FieldSystem:
             Decay time constant (memory fields only).
         source_field : str or None
             Name of the field whose sigmoid drives memory update.
+        gamma_gated : bool
+            If True, the self-excitation kernel is gated off when there is no
+            external input and activation is subthreshold (Eq. 7).
         """
         if field_type == "memory":
             if source_field is None:
@@ -134,6 +139,7 @@ class FieldSystem:
             sigmoid_threshold=sigmoid_threshold,
             tau_decay=tau_decay,
             source_field=source_field,
+            gamma_gated=gamma_gated,
         )
         self._fields[name] = spec
         self._field_order.append(name)
@@ -258,9 +264,11 @@ class FieldSystem:
                     s = self._sum_inputs_at(name, nearest_t)
                     coupling = self._get_couplings_for(name, state)
                     gu = sigmoid(u, spec.sigmoid_beta, spec.sigmoid_threshold)
-                    dudt = (
-                        -u + spec.h + s + coupling + self._dx * convolve(gu, spec.kernel)
-                    ) / spec.tau
+                    kernel_term = self._dx * convolve(gu, spec.kernel)
+                    if spec.gamma_gated:
+                        gate = 1.0 if (np.any(s > 0) or np.any(u > spec.sigmoid_threshold)) else 0.0
+                        kernel_term = gate * kernel_term
+                    dudt = (-u + spec.h + s + coupling + kernel_term) / spec.tau
                     new_u = u + dt * dudt
                     if noise_scale > 0:
                         new_u += (noise_scale / spec.tau) * np.random.normal(0, 1, n)
