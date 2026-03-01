@@ -108,7 +108,7 @@ class FieldSystem:
             Name of the field whose sigmoid drives memory update.
         gamma_gated : bool
             If True, the self-excitation kernel is gated off when there is no
-            external input and activation is subthreshold (Eq. 7).
+            external input (s <= 0).
         """
         if field_type == "memory":
             if source_field is None:
@@ -266,7 +266,7 @@ class FieldSystem:
                     gu = sigmoid(u, spec.sigmoid_beta, spec.sigmoid_threshold)
                     kernel_term = self._dx * convolve(gu, spec.kernel)
                     if spec.gamma_gated:
-                        gate = 1.0 if (np.any(s > 0) or np.any(u > spec.sigmoid_threshold)) else 0.0
+                        gate = 1.0 if np.any(s > 0) else 0.0
                         kernel_term = gate * kernel_term
                     dudt = (-u + spec.h + s + coupling + kernel_term) / spec.tau
                     new_u = u + dt * dudt
