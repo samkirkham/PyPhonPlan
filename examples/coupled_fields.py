@@ -48,7 +48,7 @@ sys = FieldSystem(x_min=-10, x_max=10, step_size=0.05)
 
 # planning field with kernel params
 kp = dict(c_exc=25, c_inh=22.5, c_global=0.1, sigma_exc=2.0, sigma_inh=4.0)
-sys.add_field("planning", tau=25, h=-2, kernel_params=kp)
+sys.add_field("planning", tau=25, h=-2, kernel_params=kp, gamma_gated=True)
 
 # memory field with kernel params
 km = dict(c_exc=5, c_inh=2.5, c_global=0.0, sigma_exc=2.0, sigma_inh=4.0)
@@ -60,11 +60,18 @@ sys.add_field("perception", tau=10, h=-2, kernel_params=kperc)
 
 # add couplings
 sys.add_coupling("memory", "planning", weight=10.0)
-sys.add_coupling("perception", "planning", weight=10.0)
+sys.add_coupling("perception", "planning", weight=1.0)  # weak: sub-threshold preshaping
 
 # add inputs to planning and perception field with different timings
+# Response cue drives planning; perception alone should preshape but not trigger
+# peaks in the gamma-gated planning field (Eq. 7).
 sys.add_input("planning", "response", amplitude=100, position=0, width=0.5, start=50, end=200)
 sys.add_input("perception", "auditory", amplitude=80, position=-1, width=0.5, start=100, end=250)
 
 # solve field dynamics
 sys.solve(t_start=0, t_end=300)
+
+# plot all three layers
+plot_field_heatmap(sys.time, sys.x, sys.activation["planning"], title="Planning field (gamma-gated)")
+plot_field_heatmap(sys.time, sys.x, sys.activation["perception"], title="Perception field")
+plot_field_heatmap(sys.time, sys.x, sys.activation["memory"], title="Memory field")
