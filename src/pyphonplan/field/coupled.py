@@ -64,6 +64,7 @@ class FieldSystem:
         self._fields: dict[str, _FieldSpec] = {}
         self._field_order: list[str] = []
         self._couplings: list[_Coupling] = []
+        self._last_state: dict[str, np.ndarray] = {}
         self.time: np.ndarray | None = None
         self.activation: dict[str, np.ndarray] = {}
 
@@ -246,8 +247,10 @@ class FieldSystem:
         results = {name: np.empty((n, n_steps)) for name in self._field_order}
         state = {}
         for name in self._field_order:
-            if y0 is not None:
+            if y0 is not None and name in y0:
                 state[name] = y0[name].copy()
+            elif name in self._last_state:
+                state[name] = self._last_state[name].copy()
             else:
                 state[name] = self._fields[name].h * np.ones(n)
             results[name][:, 0] = state[name]
@@ -302,4 +305,27 @@ class FieldSystem:
                 state[name] = new_u
                 results[name][:, i] = new_u
 
+        # Persist final state for memory fields
+        for name in self._field_order:
+            if self._fields[name].field_type == "memory":
+                self._last_state[name] = state[name].copy()
+
         self.activation = results
+
+    def reset(self, field_name: str | None = None):
+        """Clear stored state so next solve() starts from resting level.
+
+        If field_name is given, reset only that field. Otherwise reset all.
+        """
+        if field_name is not None:
+            self._last_state.pop(field_name, None)
+        else:
+            self._last_state.clear()
+
+    def clear_inputs(self, field_name: str | None = None):
+        """Remove all inputs from a field, or all fields if no name given."""
+        if field_name is not None:
+            self._fields[field_name].inputs.clear()
+        else:
+            for spec in self._fields.values():
+                spec.inputs.clear()
