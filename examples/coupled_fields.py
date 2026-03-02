@@ -18,7 +18,7 @@ sys.add_field("planning", tau=25, h=-2, kernel_params=kernel_params)
 
 # memory field with kernel params
 kernel_memory = dict(c_exc=5, c_inh=2.5, c_global=0.0, sigma_exc=2.0, sigma_inh=4.0, expand=3.0,)
-sys.add_field("memory", tau=150, h=-5, kernel_params=kernel_memory, field_type="memory", tau_decay=500, source_field="planning")
+sys.add_field("memory", tau=150, h=0, kernel_params=kernel_memory, field_type="memory", tau_decay=500, source_field="planning")  # h ignored for memory fields (always init at 0)
 
 # coupling between fields
 sys.add_coupling("memory", "planning", weight=10.0)
@@ -52,7 +52,7 @@ sys.add_field("planning", tau=25, h=-2, kernel_params=kp, gamma_gated=True)
 
 # memory field with kernel params
 km = dict(c_exc=5, c_inh=2.5, c_global=0.0, sigma_exc=2.0, sigma_inh=4.0)
-sys.add_field("memory", tau=150, h=-5, kernel_params=km, field_type="memory", tau_decay=500, source_field="planning")
+sys.add_field("memory", tau=150, h=0, kernel_params=km, field_type="memory", tau_decay=500, source_field="planning")  # h ignored for memory fields
 
 # perception field with kernel params
 kperc = dict(c_exc=15, c_inh=12, c_global=0.05, sigma_exc=2.0, sigma_inh=4.0)
