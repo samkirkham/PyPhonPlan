@@ -168,7 +168,11 @@ class FieldSystem:
         return plot_inputs(self.x, spec.inputs, show=show)
 
     def add_coupling(self, source: str, target: str, weight: float):
-        """Add coupling: weight * sigmoid(u_source) is added to target's RHS."""
+        """Add directed coupling from source to target.
+
+        Standard sources: weight * sigmoid(u_source).
+        Memory sources: weight * u_source (raw, no sigmoid).
+        """
         self._couplings.append(_Coupling(source, target, weight))
 
     def add_input(
@@ -204,15 +208,23 @@ class FieldSystem:
         return total
 
     def _get_couplings_for(self, target: str, state_dict: dict[str, np.ndarray]) -> np.ndarray:
-        """Sum sigmoid-gated coupling contributions to target field."""
+        """Sum coupling contributions to target field.
+
+        Memory source fields couple raw (weight * u_mem), since the trace
+        was already built from sigmoid output. Standard source fields
+        couple sigmoid-gated (weight * sigmoid(u)).
+        """
         total = np.zeros(self.n_x)
         for c in self._couplings:
             if c.target == target:
                 source_spec = self._fields[c.source]
-                gu = sigmoid(state_dict[c.source],
-                             source_spec.sigmoid_beta,
-                             source_spec.sigmoid_threshold)
-                total += c.weight * gu
+                if source_spec.field_type == "memory":
+                    total += c.weight * state_dict[c.source]
+                else:
+                    gu = sigmoid(state_dict[c.source],
+                                 source_spec.sigmoid_beta,
+                                 source_spec.sigmoid_threshold)
+                    total += c.weight * gu
         return total
 
     def solve(
@@ -252,7 +264,10 @@ class FieldSystem:
             elif name in self._last_state:
                 state[name] = self._last_state[name].copy()
             else:
-                state[name] = self._fields[name].h * np.ones(n)
+                if self._fields[name].field_type == "memory":
+                    state[name] = np.zeros(n)
+                else:
+                    state[name] = self._fields[name].h * np.ones(n)
             results[name][:, 0] = state[name]
 
         noise_scale = noise * np.sqrt(dt) if noise > 0 else 0.0
@@ -289,13 +304,10 @@ class FieldSystem:
                     source_u = state[spec.source_field]
                     source_spec = self._fields[spec.source_field]
                     gu_source = sigmoid(source_u, source_spec.sigmoid_beta, source_spec.sigmoid_threshold)
-                    s = self._sum_inputs_at(name, nearest_t)
-                    coupling = self._get_couplings_for(name, state)
                     dudt = np.where(
                         source_u > source_spec.sigmoid_threshold,
-                        (-u + spec.h + s + coupling
-                         + self._dx * convolve(gu_source, spec.kernel)) / spec.tau,
-                        (-u + spec.h) / spec.tau_decay,
+                        (-u + self._dx * convolve(gu_source, spec.kernel)) / spec.tau,
+                        -u / spec.tau_decay,
                     )
                     new_u = u + dt * dudt
 
