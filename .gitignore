@@ -12,19 +12,19 @@ wheels/
 # macOS
 .DS_Store
 
-# LaTeX build artifacts                                                      
-  *.aux                              
-  *.bbl
-  *.blg
-  *.log
-  *.out
-  *.toc
-  *.fdb_latexmk
-  *.fls
-  *.synctex.gz
-  *.run.xml
-  *-blx.bib
-  paper/*.pdf
+# LaTeX build files                                                      
+*.aux                              
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.run.xml
+*-blx.bib
+paper/*.pdf
 
 # Identifying author information (for double-blind review); remove this line for final submission and author-info.tex will be injected into camera-ready version
 paper/author-info.tex
