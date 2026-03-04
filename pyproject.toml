@@ -1,7 +1,7 @@
 [project]
 name = "pyphonplan"
 version = "0.1.0"
-description = "Dynamic field theory planning + task dynamic execution for computational phonetics"
+description = "Simulating phonetic planning with dynamic neural fields and task dynamics"
 requires-python = ">=3.11"
 dependencies = ["numpy", "scipy", "matplotlib"]
 
