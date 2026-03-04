@@ -89,13 +89,13 @@ def plot_field_heatmap(
     # Threshold crossing line
     crossing_idx = None
     if activation_time:
-        above_any = np.any(u >= threshold, axis=0)
+        above_any = np.any(u > threshold, axis=0)
         if np.any(above_any):
             crossing_idx = int(np.argmax(above_any))
         if crossing_idx is not None:
             ax.axvline(
                 x=t[crossing_idx], color="red", linewidth=2,
-                label=f"Activation >= {threshold} at t={t[crossing_idx]:.2f}",
+                label=f"Activation > {threshold} at t={t[crossing_idx]:.2f}",
             )
 
     # Peak activation trajectory: only show when there is a focused peak
