@@ -18,7 +18,7 @@ Then run any scripts/notebooks with `uv run`:
 
 ## Quick start
 
-This is how you define a single-later dynamic field, with two inputs at different time intervals. We then extract the above-threshold peak activation trace and use this as a time-varying target to drive a task dynamic equation.
+This is how you define a single-layer dynamic field, with two inputs at different time intervals. We then extract the above-threshold peak activation trace and use this as a time-varying target to drive a task dynamic equation.
 
 ```python
 from pyphonplan import DynamicField, Targets, TaskDynamics
