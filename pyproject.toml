@@ -4,6 +4,14 @@ version = "0.1.0"
 description = "Simulating phonetic planning with dynamic neural fields and task dynamics"
 requires-python = ">=3.11"
 dependencies = ["numpy", "scipy", "matplotlib"]
+license = "MIT"
+authors = [
+    { name = "Sam Kirkham", email = "s.kirkham@lancaster.ac.uk" },
+]
+
+[project.urls]
+Homepage = "https://github.com/samkirkham/PyPhonPlan"
+Repository = "https://github.com/samkirkham/PyPhonPlan"
 
 [build-system]
 requires = ["hatchling"]
