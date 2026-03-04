@@ -34,3 +34,6 @@ paper/author-info.tex
 
 # don't track paper for now
 paper/
+
+# don't track tests for now
+tests/
