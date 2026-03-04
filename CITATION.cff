@@ -11,7 +11,7 @@ version: 0.1.0
 date-released: 2026-02-28
 url: https://github.com/samkirkham/PyPhonPlan
 license: MIT
-abstract: ""
+abstract: "PyPhonPlan is a Python toolkit for implementing dynamical models of phonetic planning using coupled dynamic neural fields and task dynamic simulations. The toolkit provides modular components for defining planning, perception and memory fields, as well as between-field coupling, gestural inputs, and using field activation profiles to solve tract variable trajectories."
 keywords:
   - phonetics
   - dynamic field theory
