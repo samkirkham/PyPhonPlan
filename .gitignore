@@ -32,9 +32,6 @@ paper/author-info.tex
 # ignore NOTES.md (private notes for myself)
 NOTES.md
 
-# don't track paper for now
-paper/
-
-# don't track tests for now
+# don't track tests for now
 tests/
 .pytest_cache/
