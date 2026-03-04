@@ -42,6 +42,7 @@ class _Coupling:
     source: str
     target: str
     weight: float
+    use_sigmoid: bool = True
 
 
 class FieldSystem:
@@ -167,13 +168,21 @@ class FieldSystem:
         from pyphonplan.viz.field_plots import plot_inputs
         return plot_inputs(self.x, spec.inputs, show=show)
 
-    def add_coupling(self, source: str, target: str, weight: float):
+    def add_coupling(self, source: str, target: str, weight: float, sigmoid: bool = True):
         """Add directed coupling from source to target.
 
-        Standard sources: weight * sigmoid(u_source).
-        Memory sources: weight * u_source (raw, no sigmoid).
+        Parameters
+        ----------
+        source, target : str
+            Field names.
+        weight : float
+            Coupling strength.
+        sigmoid : bool
+            If True (default), couple via sigmoid(u_source). If False,
+            couple via raw u_source. Memory sources always use raw coupling
+            regardless of this setting.
         """
-        self._couplings.append(_Coupling(source, target, weight))
+        self._couplings.append(_Coupling(source, target, weight, use_sigmoid=sigmoid))
 
     def add_input(
         self,
@@ -210,15 +219,15 @@ class FieldSystem:
     def _get_couplings_for(self, target: str, state_dict: dict[str, np.ndarray]) -> np.ndarray:
         """Sum coupling contributions to target field.
 
-        Memory source fields couple raw (weight * u_mem), since the trace
-        was already built from sigmoid output. Standard source fields
-        couple sigmoid-gated (weight * sigmoid(u)).
+        Memory source fields always couple raw (weight * u_mem). Other
+        source fields couple via sigmoid(u) by default, or raw if the
+        coupling was created with sigmoid=False.
         """
         total = np.zeros(self.n_x)
         for c in self._couplings:
             if c.target == target:
                 source_spec = self._fields[c.source]
-                if source_spec.field_type == "memory":
+                if source_spec.field_type == "memory" or not c.use_sigmoid:
                     total += c.weight * state_dict[c.source]
                 else:
                     gu = sigmoid(state_dict[c.source],
