@@ -6,8 +6,14 @@ Implements the Amari equation for a 1D dynamic field:
 Based on dynamicfields.py and phonology_wo_symbols/figures/dnf/functions.py.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
-from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 from pyphonplan.field.inputs import GaussianInput
 from pyphonplan.field.kernel import interaction_kernel, sigmoid, convolve, make_kernel_x

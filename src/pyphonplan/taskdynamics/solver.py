@@ -11,9 +11,6 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from pyphonplan.viz.task_plots import plot_trajectory, plot_blended_params
-
-
 NEUTRAL_STIFFNESS = 2000.0
 
 
@@ -294,6 +291,7 @@ class TaskDynamics:
             If True, plot absolute velocity instead of signed velocity.
         """
         self._check_solved()
+        from pyphonplan.viz.task_plots import plot_trajectory
         return plot_trajectory(
             self.time, self.position, self.velocity,
             abs_velocity=abs_velocity, show=show,
@@ -308,6 +306,7 @@ class TaskDynamics:
             Subset of ['k', 'target', 'damping'] to plot. None plots all.
         """
         self._check_solved()
+        from pyphonplan.viz.task_plots import plot_blended_params
         return plot_blended_params(
             self.time,
             self.blended_k,
