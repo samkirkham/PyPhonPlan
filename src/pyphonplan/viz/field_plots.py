@@ -182,6 +182,7 @@ def plot_field_surface(
     axis_labels: list[str] | None = None,
     zlim: list[float] | None = None,
     threshold: float | None = None,
+    show: bool = True,
 ) -> Figure:
     """3D surface plot of field activation.
 
@@ -199,6 +200,8 @@ def plot_field_surface(
         Z-axis limits.
     threshold : float or None
         If provided, draw a semi-transparent plane at this z-value.
+    show : bool
+        If True, call plt.show().
 
     Returns
     -------
@@ -219,7 +222,8 @@ def plot_field_surface(
     ax.set_zlabel(axis_labels[2])
     if zlim is not None:
         ax.set_zlim(zlim)
-    plt.show()
+    if show:
+        plt.show()
     return fig
 
 
