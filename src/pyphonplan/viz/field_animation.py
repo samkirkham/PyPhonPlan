@@ -81,5 +81,7 @@ def animate_field(
 
     if show:
         plt.show()
+    else:
+        plt.close(fig)
 
     return anim
