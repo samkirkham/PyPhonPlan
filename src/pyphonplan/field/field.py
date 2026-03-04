@@ -118,6 +118,7 @@ class DynamicField:
         tau: float = 50.0,
         h: float = -2.0,
         noise: float = 0.0,
+        rng: np.random.Generator | None = None,
     ):
         """Solve the dynamic field equation using Euler-Maruyama integration.
 
@@ -138,6 +139,9 @@ class DynamicField:
             Resting level.
         noise : float
             Noise amplitude (0 = deterministic).
+        rng : np.random.Generator or None
+            Random number generator for reproducibility. If None, uses
+            ``np.random.default_rng()``.
         """
         if self.kernel is None:
             raise RuntimeError("Call set_kernel() before solve().")
@@ -152,6 +156,8 @@ class DynamicField:
         u = y0.copy()
         activation[:, 0] = u
         noise_scale = noise * np.sqrt(dt) / tau if noise > 0 else 0.0
+        if noise_scale > 0 and rng is None:
+            rng = np.random.default_rng()
 
         for i in range(1, n_steps):
             t = self.time[i - 1]
@@ -162,7 +168,7 @@ class DynamicField:
             ) / tau
             u = u + dt * dudt
             if noise_scale > 0:
-                u += noise_scale * np.random.normal(0, 1, n_x)
+                u += noise_scale * rng.normal(0, 1, n_x)
             activation[:, i] = u
 
         self.activation = activation

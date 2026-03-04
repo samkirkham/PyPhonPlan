@@ -234,6 +234,7 @@ class FieldSystem:
         dt: int = 1,
         y0: dict[str, np.ndarray] | None = None,
         noise: float = 0.0,
+        rng: np.random.Generator | None = None,
     ):
         """Solve the coupled field system using Euler-Maruyama integration.
 
@@ -249,6 +250,9 @@ class FieldSystem:
             If None, each field starts at its resting level h.
         noise : float
             Noise amplitude.
+        rng : np.random.Generator or None
+            Random number generator for reproducibility. If None, uses
+            ``np.random.default_rng()``.
         """
         n = self.n_x
 
@@ -271,6 +275,8 @@ class FieldSystem:
             results[name][:, 0] = state[name]
 
         noise_scale = noise * np.sqrt(dt) if noise > 0 else 0.0
+        if noise_scale > 0 and rng is None:
+            rng = np.random.default_rng()
         gate_latched = {name: False for name in self._field_order}
 
         for i in range(1, n_steps):
@@ -294,7 +300,7 @@ class FieldSystem:
                     dudt = (-u + spec.h + s + coupling + kernel_term) / spec.tau
                     new_u = u + dt * dudt
                     if noise_scale > 0:
-                        new_u += (noise_scale / spec.tau) * np.random.normal(0, 1, n)
+                        new_u += (noise_scale / spec.tau) * rng.normal(0, 1, n)
                     if spec.gamma_gated and not gate_latched[name]:
                         new_u = np.minimum(new_u, spec.sigmoid_threshold)
 
