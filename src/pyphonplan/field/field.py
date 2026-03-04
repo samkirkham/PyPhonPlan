@@ -2,8 +2,6 @@
 
 Implements the Amari equation for a 1D dynamic field:
     tau * du/dt = -u + h + s(t) + conv(sigmoid(u), kernel) + noise
-
-Based on dynamicfields.py and phonology_wo_symbols/figures/dnf/functions.py.
 """
 
 from __future__ import annotations

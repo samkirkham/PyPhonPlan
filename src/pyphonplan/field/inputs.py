@@ -1,4 +1,4 @@
-"""Gaussian input specification for dynamic fields."""
+"""Gaussian inputs for dynamic fields."""
 
 from dataclasses import dataclass
 

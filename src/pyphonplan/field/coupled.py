@@ -3,9 +3,6 @@
 Supports N named fields with inter-field coupling. Field types:
 - "standard": standard Amari dynamics
 - "memory": conditional build/decay driven by sigmoid of a source field
-
-Based on dft_memory and dft_perception in
-phonology_wo_symbols/figures/dnf/functions.py.
 """
 
 from __future__ import annotations

@@ -1,7 +1,4 @@
 """Interaction kernel and utility functions for dynamic fields.
-
-Based on corrected kernel and fftconvolve from
-phonology_wo_symbols/figures/dnf/functions.py.
 """
 
 import numpy as np
