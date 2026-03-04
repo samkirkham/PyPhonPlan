@@ -26,7 +26,7 @@ targets = Targets(field)
 param_peak, act_peak, time = targets.peak_activation(above_threshold=True)
 
 # solve tract variables based on peak activation value; stiffness needs to be tuned depending on duration of inputs in dynamic field; here k=8000 reaches targets
-# the timescale corresponds to the period of above-threshold activation, where 0 is start of above-threshold activation. By default this will concert to milliseconds, but if you want to retain DFT scaling (i.e. dt=1.0) then k should be reduced accordingly (k=0.008). 
+# the timescale corresponds to the period of above-threshold activation, where 0 is start of above-threshold activation. By default this will convert to milliseconds, but if you want to retain DFT scaling (i.e. dt=1.0) then k should be reduced accordingly (k=0.008). 
 td = TaskDynamics()
 td.solve_from_trace(time, param_peak, k=8000, time_scale=0.001)
 

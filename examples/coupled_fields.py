@@ -9,7 +9,7 @@ from pyphonplan.viz import plot_field_heatmap
 2-layer: planning + memory
 """
 
-# initialise field system (use FieldSyste to manage multiple fields and their interactions)
+# initialise field system (use FieldSystem to manage multiple fields and their interactions)
 sys = FieldSystem(x_min=-10, x_max=10, step_size=0.02)
 
 # planning field with kernel params
