@@ -1,7 +1,7 @@
 """Task dynamic solver (Saltzman & Munhall 1989).
 
 Standalone solver for articulatory trajectories driven by gestural
-specifications. Extracted from pygest, stripped of pandas dependencies.
+specifications.
 """
 
 from __future__ import annotations

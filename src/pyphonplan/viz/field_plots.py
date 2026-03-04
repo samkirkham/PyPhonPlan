@@ -1,8 +1,4 @@
-"""Field visualisation functions.
-
-Based on plot_field_heatmap and plot_field from
-phonology_wo_symbols/figures/dnf/functions.py.
-"""
+"""Field visualisation functions."""
 
 from __future__ import annotations
 

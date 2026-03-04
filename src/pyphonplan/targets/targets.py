@@ -1,7 +1,4 @@
-"""Target extraction and blending from solved dynamic fields.
-
-Generalises the old 2-target Targets class to N targets.
-"""
+"""Target extraction and blending from solved dynamic fields."""
 
 from __future__ import annotations
 
