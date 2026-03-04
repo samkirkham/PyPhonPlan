@@ -291,8 +291,6 @@ class FieldSystem:
                             gate_latched[name] = True
                         elif not np.any(u > spec.sigmoid_threshold):
                             gate_latched[name] = False
-                        if not gate_latched[name]:
-                            kernel_term *= 0.0
                     dudt = (-u + spec.h + s + coupling + kernel_term) / spec.tau
                     new_u = u + dt * dudt
                     if noise_scale > 0:
