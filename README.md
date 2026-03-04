@@ -98,8 +98,8 @@ src/pyphonplan/
 | Notebook | Description |
 |---|---|
 | `examples/single_field.ipynb` | Single-layer dynamic field with two competing inputs, target extraction, peak tracking, and field-to-task dynamics pipeline. |
-| `examples/coupled_fields.ipynb` | Two-layer (planning + memory) and three-layer (planning + memory + perception) coupled field systems. |
-| `examples/gestures.ipynb` | Task dynamics from explicit gestural specifications, including overlapping gestures with parameter blending. |
+| `examples/dual_fields.ipynb` | Two-layer coupled field system (planning + memory) with inter-field coupling. |
+| `examples/simulate_tract_variables.ipynb` | Task dynamics from explicit gestural specifications, including overlapping gestures with parameter blending. |
 | `examples/shadowing.ipynb` | Three-layer shadowing paradigm (baseline, shadowing, washout) demonstrating phonetic convergence due to perception-induced changes in the coupled memory field.
 
 ## Author
