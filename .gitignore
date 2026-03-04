@@ -37,3 +37,4 @@ paper/
 
 # don't track tests for now
 tests/
+.pytest_cache/
