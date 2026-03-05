@@ -2,7 +2,7 @@
 
 **Simulating phonetic planning with dynamic neural fields and task dynamics**
 
-PyPhonPlan is a computational toolkit for modelling phonetic planning in terms of dynamic neural fields (Schöner et al. 2016), which then form inputs to a task dynamic equation (Saltzman & Munhall 1989) for generating tract variable trajectories. PyPhonPlan is implemented entirely in Python.
+PyPhonPlan is a computational toolkit for modelling phonetic planning in terms of dynamic neural fields (Schöner et al. 2016), which then form inputs to a task dynamic equation (Saltzman & Munhall 1989) for generating tract variable trajectories. PyPhonPlan is implemented entirely in Python and is open-source software.
 
 ## Installation
 
@@ -15,6 +15,7 @@ uv sync
 ```
 
 Then run any scripts/notebooks with `uv run`:
+
 
 ## Quick start
 
@@ -42,6 +43,17 @@ td = TaskDynamics()
 td.solve_from_trace(time, param_peak, k=8000, time_scale=0.001)
 td.plot(abs_velocity=True)
 ```
+
+## Examples
+
+The following Jupyter notebooks demonstrate the use of `PyPhonPlan` in greater detail, with a range of use cases and simulation types.
+
+| Notebook | Description |
+|---|---|
+| `examples/single_field.ipynb` | Single-layer dynamic field with two competing inputs, target extraction, peak tracking, and field-to-task dynamics pipeline. |
+| `examples/dual_fields.ipynb` | Two-layer coupled field system (planning + memory) with inter-field coupling. |
+| `examples/tract_variables.ipynb` | Task dynamics from explicit gestural specifications, including overlapping gestures with parameter blending. |
+| `examples/shadowing.ipynb` | Three-layer shadowing paradigm (baseline, shadowing, washout) demonstrating phonetic convergence due to perception-induced changes in the coupled memory field.
 
 ## Package structure
 
@@ -93,14 +105,6 @@ src/pyphonplan/
 - Task dynamic trajectory and velocity plots.
 - Field activation animations.
 
-## Examples
-
-| Notebook | Description |
-|---|---|
-| `examples/single_field.ipynb` | Single-layer dynamic field with two competing inputs, target extraction, peak tracking, and field-to-task dynamics pipeline. |
-| `examples/dual_fields.ipynb` | Two-layer coupled field system (planning + memory) with inter-field coupling. |
-| `examples/tract_variables.ipynb` | Task dynamics from explicit gestural specifications, including overlapping gestures with parameter blending. |
-| `examples/shadowing.ipynb` | Three-layer shadowing paradigm (baseline, shadowing, washout) demonstrating phonetic convergence due to perception-induced changes in the coupled memory field.
 
 ## Author
 
