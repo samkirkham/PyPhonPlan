@@ -96,16 +96,17 @@ def plot_field_heatmap(
 
     # Peak activation trajectory: only show when there is a focused peak
     # (peak must exceed threshold AND stand out from the field minimum)
-    peak_indices = np.argmax(u, axis=0)
-    peak_locations = x[peak_indices]
-    peak_activation_values = u[peak_indices, np.arange(u.shape[1])]
-    min_activation_values = np.min(u, axis=0)
-    contrast = peak_activation_values - min_activation_values
-    has_peak = (peak_activation_values > threshold) & (contrast > 1.0)
-    peaks_above = np.where(has_peak, peak_locations, np.nan)
-    if crossing_idx is not None:
-        peaks_above[:crossing_idx] = np.nan
-    ax.plot(t, peaks_above, linestyle="--", color="white", linewidth=2, label="Peak activation")
+    if activation_time:
+        peak_indices = np.argmax(u, axis=0)
+        peak_locations = x[peak_indices]
+        peak_activation_values = u[peak_indices, np.arange(u.shape[1])]
+        min_activation_values = np.min(u, axis=0)
+        contrast = peak_activation_values - min_activation_values
+        has_peak = (peak_activation_values > threshold) & (contrast > 1.0)
+        peaks_above = np.where(has_peak, peak_locations, np.nan)
+        if crossing_idx is not None:
+            peaks_above[:crossing_idx] = np.nan
+        ax.plot(t, peaks_above, linestyle="--", color="white", linewidth=2, label="Peak activation")
 
     if inset:
         ax.legend(loc="lower right")
