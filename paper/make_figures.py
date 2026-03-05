@@ -46,20 +46,20 @@ def make_fig1():
     sys = FieldSystem(x_min=-10, x_max=10, step_size=0.02)
 
     kernel_params = dict(
-        c_exc=2, c_inh=1, c_global=0.5,
+        c_exc=4, c_inh=1, c_global=0.5,
         sigma_exc=1.0, sigma_inh=2.0, expand=3.0,
     )
     sys.add_field("planning", tau=25, h=-2, kernel_params=kernel_params)
 
     kernel_memory = dict(
-        c_exc=2, c_inh=1, c_global=0.0,
+        c_exc=4, c_inh=1, c_global=0.0,
         sigma_exc=1.0, sigma_inh=2.0, expand=3.0,
     )
     sys.add_field(
         "memory", tau=150, h=0, kernel_params=kernel_memory,
         field_type="memory", tau_decay=500, source_field="planning",
     )
-    sys.add_coupling("memory", "planning", weight=10.0)
+    sys.add_coupling("memory", "planning", weight=2.0)
 
     sys.add_input(
         "planning", "input1",
@@ -80,6 +80,7 @@ def make_fig1():
             title=title,
             figsize=(COLUMN_WIDTH, 2.2),
             show=False,
+            activation_time=(name != "memory"),
         )
         ax = fig.axes[0]
         ax.get_legend().remove()
@@ -97,19 +98,19 @@ def make_fig2():
     # --- Simulation setup (matches shadowing.ipynb) ---
     sys = FieldSystem(x_min=-10, x_max=10, step_size=0.05)
 
-    kp = dict(c_exc=2, c_inh=1, c_global=0.5, sigma_exc=1.0, sigma_inh=2.0)
+    kp = dict(c_exc=4, c_inh=1, c_global=0.5, sigma_exc=1.0, sigma_inh=2.0)
     sys.add_field("planning", tau=25, h=-2, kernel_params=kp, gamma_gated=True)
 
-    km = dict(c_exc=2, c_inh=1, c_global=0.0, sigma_exc=1.0, sigma_inh=2.0)
+    km = dict(c_exc=4, c_inh=1, c_global=0.0, sigma_exc=1.0, sigma_inh=2.0)
     sys.add_field(
         "memory", tau=150, h=0, kernel_params=km,
         field_type="memory", tau_decay=1000, source_field="planning",
     )
 
-    kperc = dict(c_exc=2, c_inh=1, c_global=0.5, sigma_exc=1.0, sigma_inh=2.0)
+    kperc = dict(c_exc=4, c_inh=1, c_global=0.5, sigma_exc=1.0, sigma_inh=2.0)
     sys.add_field("perception", tau=10, h=-2, kernel_params=kperc)
 
-    sys.add_coupling("memory", "planning", weight=20.0)
+    sys.add_coupling("memory", "planning", weight=10.0)
     sys.add_coupling("perception", "planning", weight=10.0, sigmoid=False)
 
     RESPONSE_POS = 3.0
@@ -218,7 +219,5 @@ def make_fig2():
 
 
 if __name__ == "__main__":
-    print("Generating paper figures...")
     make_fig1()
     make_fig2()
-    print("Done.")
