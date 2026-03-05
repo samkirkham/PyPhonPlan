@@ -14,7 +14,7 @@ cd PyPhonPlan
 uv sync
 ```
 
-Then run any scripts/notebooks with `uv run`:
+Then run any scripts/notebooks with `uv run`.
 
 
 ## Quick start
