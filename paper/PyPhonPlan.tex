@@ -84,7 +84,7 @@ In this section, we review the components of the dynamic field model implemented
 
 \subsection{Field dynamics}
 
-The dynamics of a control variable (e.g.~TTCD) can be formalized as a dynamic neural field \cite{erlhagen-schoener2002}, with activation of a neural population defined over the control variable's metric range $x$,
+The dynamics of a one-dimensional articulatory or acoustic control variable can be formalized as a dynamic neural field \cite{erlhagen-schoener2002}, with activation across a neural population defined over the metric range of $x$,
 
 \begin{multline}
 \tau \dot{u}(x,t) = -u(x,t) + h + s(x,t)
@@ -94,12 +94,12 @@ The dynamics of a control variable (e.g.~TTCD) can be formalized as a dynamic ne
 \end{multline}
 
 
-where $\tau$ dictates the rate of field evolution. $u(x,t)$ is time-dependent activation at each field site $x$, with the negative sign in (\ref{dnf}) providing stable decay towards the resting level $h$. $s(x,t)$ represents an input to the field, and $\xi(x,t)$ is Gaussian noise scaled by a coefficient $q$ \cite{schoener-etal2016}. The interaction kernel $k(x - x')$ defines excitatory and inhibitory forces across the DNF, which is explained in greater detail below. $x$ here represents a one-dimensional articulatory or acoustic variable (e.g.~TTCD, LA, $F_1$). Figure \ref{fig:dnf}  visualizes the dynamics of a single DNF, where two time-scheduled inputs at $x = -5$ and $x = +5$ drive activation above the resting level at different field locations.
+where $\tau$ dictates the rate of field evolution and $u(x,t)$ is time-dependent activation at each field site $x$. The negative sign $-u(x,t)$ ensures stable decay towards the resting level $h$. $s(x,t)$ represents sensory input to the field, and $\xi(x,t)$ is Gaussian noise scaled by a coefficient $q$ \cite{schoener-etal2016}. The interaction kernel $k(x - x')$ defines excitatory and inhibitory forces across the DNF, which is explained in Section \ref{interactions}.
 
 \begin{figure}
   \centering
   \includegraphics[width=\columnwidth]{figs/fig1a.pdf}
-  \caption{Heatmap of a single-layer DNF with two competing inputs at $x = -5$ and $x = +5$. The dotted line tracks peak activation above threshold. The red line indicates the start of above-threshold activation.}
+  \caption{Heatmap of the planning-layer of a DNF with two competing inputs at $x = -5$ and $x = +5$. The red line indicates the start of above-threshold activation; the dotted white line tracks the location of above-threshold peak activation.}
   \label{fig:dnf}
 \end{figure}
 
@@ -107,14 +107,14 @@ where $\tau$ dictates the rate of field evolution. $u(x,t)$ is time-dependent ac
 
 \subsection{Inputs}
 
-The field in (\ref{dnf}) has its own intrinsic dynamics, but without sensory input the field's dynamics will converge to a stable, sub-threshold resting level (see Section \ref{interactions}). Inputs to the DNF drive activation away from the resting level and excite localized areas of the field. These inputs represent task-related input (i.e.~responding to an experimental prompt), retrieval of a speech planning representation, or sensory/perceptual inputs (i.e.~hearing or shadowing another speaker). An input $s(x,t)$ is defined as a Gaussian distribution over a parameter $x$ with amplitude $a$, centroid $p$ and width $w$,
+The field in (\ref{dnf}) has its own intrinsic dynamics, but without non-zero sensory input the field's dynamics will converge to a stable, sub-threshold resting level. Inputs to the DNF drive activation away from the resting level and excite localized areas of the field. Inputs can represent task-related input (i.e.~responding to an experimental prompt or cue), retrieval of a speech planning representation from memory, or sensory/perceptual inputs (i.e.~speech perception). An input $s(x,t)$ is defined as a Gaussian distribution over a parameter $x$ with amplitude $a$, centroid $p$ and width $w$,
 
 \begin{equation}
 s(x,t) = \sum_{i} a_{i} \exp \left[ - \frac{(x-p_{i})^2}{2w^2_{i}} \right].
 \label{dnf_input}
 \end{equation}
 
-This means that gestural inputs are inherently distributional, in contrast to the invariant target values in many task dynamic implementations. Inputs are typically time-bound; in the current implementation, timing is manually stipulated, but we discuss more principled timing mechanisms in Section \ref{discussion}.
+This defines gestural inputs as inherently distributional, in contrast to the invariant target values in many task dynamic implementations. Inputs are typically time-bound; in the current implementation, timing is manually stipulated, but we discuss more principled timing mechanisms in Section \ref{discussion}. Figure \ref{fig:dnf} visualizes the dynamics of a single DNF, where two time-scheduled inputs at $x = -5$ and $x = +5$ drive activation above the resting level at different field locations.
 
 \subsection{Field interactions and thresholds}
 \label{interactions}
@@ -195,19 +195,20 @@ We integrate DNF planning dynamics with a critically-damped harmonic oscillator 
 m\ddot{x} + b\dot{x} + k(x - x^*(t)) = 0.
 \end{equation}
 
-Following \cite{tilsen2019, kirkham-strycharczuk2024, shaw2025}, we derive the tract variable's time-varying target $x^*(t)$ from the planning DNF. The spatial position $x$ corresponding to peak activation in $u$ from the planning field at each time step is taken as the planned target value. An alternative formulation is to use a single constant value for $x^*(t)$, which can be derived from identifying the parameter value that corresponds to a peak activation plateau.
+Following \cite{tilsen2019, kirkham-strycharczuk2024, shaw2025}, we derive the tract variable's time-varying target $x^*(t)$ from the planning DNF. The spatial position $x$ corresponding to peak activation in $u$ from the planning field at each time step is taken as the planned target value as in (\ref{eq:max}). An alternative formulation is to use a single constant value for $x^*(t)$, which can be derived from identifying the parameter value that corresponds to a peak activation plateau.
 
 \begin{equation}
 x^*(t)= \arg\max_x u(x,t)
+\label{eq:max}
 \end{equation}
 
 In addition to the above core components, PyPhonPlan contains methods for visualization, animations, extracting DNF activation peaks, task dynamic solvers, and example simulation cases. See the GitHub repository for further information.
 
 
 
-\section{Application: Three-layer model}
+\section{Application: Coupled perception-planning-memory dynamics}
 
-The PyPhonPlan GitHub repository contains fully-documented code notebooks for typical DNF simulation cases. In this section, we review a three-layer model of a phonetic shadowing task \cite{goldinger1998}, which couples perception, planning and memory fields, and simulates tract variables from DNF activation. Parameter values and additional information can be found in the GitHub repository at \texttt{examples/shadowing.ipynb}.
+The PyPhonPlan GitHub repository contains fully-documented code notebooks for a range of DNF simulation cases. In this section, we present a three-layer model of phonetic shadowing \cite{goldinger1998}, which couples perception, planning and memory fields, and simulates tract variables from DNF activations. Parameter values and additional information can be found in the GitHub repository at \texttt{examples/shadowing.ipynb}.
 
 
 \begin{figure*}[t]
@@ -220,7 +221,7 @@ The PyPhonPlan GitHub repository contains fully-documented code notebooks for ty
 
 \subsection{Three-layer field}
 
-We define a three-layer architecture of perception, planning and memory fields. The perception field represents the influence of perceiving an interlocutor's speech on the speech planning field. For the sake of simplicity, we assume an arbitrary parameter space for $x \in [-10, 10]$, which is an articulatory dimension. Note that the perception field captures the influence of auditory perception on the planning field, rather than modelling the auditory-acoustic signal directly. The perception field is
+We define a three-layer architecture of perception, planning and memory fields. For the sake of simplicity, we assume an arbitrary parameter space for $x \in [-10, 10]$, which is a hypothesized articulatory dimension. We first model the perception field as capturing the \textit{influence} of auditory perception on the planning field, rather than modelling the auditory-acoustic signal directly. The perception field takes the form
 
 \begin{multline}
 \tau_{\text{perception}}\dot{u}_{\text{perception}}(x,t)  = -u_{\text{perception}}(x,t) + h + s_{\text{perception}}(x,t)
@@ -247,28 +248,25 @@ but with coupling to $u_{\text{perception}}(x,t)$ and $u_{\text{memory}}(x,t)$ w
  
 \subsection{Simulating phonetic shadowing}
 
-We now illustrate a full simulation of a very simple shadowing task \cite{goldinger1998}. The shadowing task paradigm is as follows:~ 
+We now simulate field dynamics during a simple shadowing task paradigm \cite{goldinger1998}, which takes the following form:
 
 \begin{enumerate}
     \item \textbf{Baseline}:~speaker produces a word cued by an orthographic representation on a computer screen.
-    \item \textbf{Shadow}:~speaker hears a (pre-recorded) talker and is prompted to repeat the word they hear.
-    \item \textbf{Washout}:~speaker produces a word cued by an orthographic representation on a computer screen.
+    \item \textbf{Shadow}:~speaker hears a (pre-recorded) talker producing the same word and is prompted to repeat the word they hear.
+    \item \textbf{Washout}:~speaker again produces the same word, cued by an orthographic representation on a computer screen.
 \end{enumerate}
- Speakers typically show phonetic convergence towards the interlocutor's voice during the shadowing block, with limited evidence for persistent post-shadowing convergence \cite{goldinger1998, babel2012}. In this sense, the shadowing task represents a highly artificial case of phonetic accommodation, whereby speakers adapt their speech in response to interlocutors.
 
-The simulations in this section follow the above structure, with 1 baseline trial, 10 shadowing trials, and 1 washout trial. Note that $s_{\text{response}}(x,t)$ is the intended production and $s_{\text{perception}}(x,t)$ is the auditory prompt. During each trial, $u_{\text{memory}}(x,t)$ is updated based on the current activation profile in the planning field. This predicts that our model speaker should converge to the perceptual input token, and that the resulting memory field update should yield minor evidence of convergence in the post-shadowing washout block. In terms of timing, perception and response inputs are sequential, with the perception field's finite time constant ($\tau = 10$) providing residual bias during planning peak formation. 
+Human speakers typically show phonetic convergence towards the interlocutor's voice during shadowing, with limited evidence for persistent post-shadowing convergence \cite{goldinger1998, babel2012}. In this sense, the shadowing task represents a highly constrained form of phonetic accommodation, whereby speakers adapt their speech in response to an interlocutor's speech. The simulations in this section follow the same structure as the above shadowing task paradigm; we simulate 1 baseline trial, 10 shadowing trials, and 1 washout trial. Note that $s_{\text{response}}(x,t) = 3$ is the speaker's intended production and $s_{\text{perception}}(x,t) = 1$ is the auditory prompt. As the intentional production and auditory prompt differ, this creates the opportunity for convergence effects during shadowing. During each trial, $u_{\text{memory}}(x,t)$ is updated based on the current activation profile in the planning field. This predicts that our model speaker should converge to the perceptual input, and the resulting memory field may show evidence of convergence during washout. Perception $t = [0,100]$ and response $t = [100, 200]$ inputs are timed sequentially, with the perception field time constant ($\tau = 10$) providing residual bias during planning peak formation. 
 
 
 \subsection{Simulation results}
-Figure \ref{fig:sim} shows the simulation results. The left panel shows the location of peak activation measured during the response plateau across all trials. During baseline, the planning peak is at the response position ($x = 3.0$). During shadowing, the speaker hears the interlocutor's production that diverges from their own ($x = 1.0$). The strong attention to perceptual input shifts the planning peak toward the interlocutor ($x = 1.58$ on the first shadowing trial). The washout planning peak retains some of this convergence effect, shifting $-0.26$ units from baseline ($x = 2.74$). This shift is driven by accumulated memory traces from shadowing trials, which bias the planning field. The right panel shows the corresponding tract variable trajectories for baseline and washout trials, with targets derived from the plateau peak positions. The washout trajectory reaches a lower endpoint than baseline, demonstrating how field-level convergence propagates to articulatory output. As such, interactional phonetic phenomena emerge from the coupled dynamics of speech planning, perception and memory. 
+Figure \ref{fig:sim} shows simulation results. The left panel shows the location of peak activation measured during the response plateau across all trials. During baseline, the planning peak is at the response position ($x = 3$). During shadowing, the auditory prompt ($x = 1$) induces a strong perception input, causing the speaker to heavily converge towards the perceived token ($x = 1.58$ on S1), which persists throughout shadowing. The washout planning peak retains some of this convergence effect, shifting $-0.26$ units from baseline ($x = 2.74$). This shift is driven by accumulated memory traces from shadowing trials, which bias the planning field. The right panel shows the corresponding tract variable trajectories for baseline and washout trials, with targets derived from the plateau peak positions. The washout trajectory reaches a lower target position than baseline, demonstrating how field-level convergence propagates to articulatory output. While only a very simple example, this demonstrates how the model architecture predicts interactional phonetic phenomena as emergent from the coupled dynamics of speech planning, perception and memory. 
 
 
 \section{Discussion}
 \label{discussion}
 
-PyPhonPlan lowers the barrier to entry for dynamical models of phonetic planning, with a computational toolkit that is tailored to the requirements of researchers in speech communication. Importantly, this includes researchers working in different theoretical paradigms who wish to generate dynamical predictions to test against their own models. The repository contains example simulations, including single- and multi-layer field simulations, plus mapping from field dynamics to task dynamics.
-
-Several design choices leave room for further extension. Most importantly, input timing is currently stipulated; future versions could implement coupled oscillator models \cite{nam-saltzman2003}, conditions of satisfaction for input deactivation \cite{sandamirskaya-schoner2010, chaturvedi-shaw2025b}, or competitive queuing for selection-activation dynamics \cite{tilsen2016, tilsen2022}. Additionally, the current task dynamic integration extracts time-varying targets from field peaks but lacks the full articulator-to-tract-variable mapping characteristic of standard models \cite{saltzman-munhall1989}. In terms of challenges, DNFs are inherently low-dimensional (typically 1--4 dimensions) and do not scale well to higher-dimensional fields. While this encourages an interpretable and biophysically-grounded approach, it constrains modelling of higher-dimensional problems and thus requires theoretical commitments about which control variables to model. 
+PyPhonPlan lowers the barrier to entry for dynamical models of phonetic planning, with a computational toolkit that is tailored to the requirements of researchers in speech communication. The flexible and modular architecture permits a range of simulation designs, with further examples in the GitHub repository. Several design choices leave room for further extension. One area for significant improvement is that input timing is currently stipulated. Future versions could implement coupled oscillator models \cite{nam-saltzman2003}, conditions of satisfaction for input deactivation \cite{sandamirskaya-schoner2010, chaturvedi-shaw2025b}, or competitive queuing for selection-activation dynamics \cite{tilsen2016, tilsen2022}. Second, the current task dynamic integration extracts time-varying targets from field peaks but lacks the full articulator-to-tract-variable mapping characteristic of standard models \cite{saltzman-munhall1989}. Third, the models shown here are 1D articulatory variables, but DNFs can scale to 2--4 dimensions for capturing multi-dimensional features (such as formants or x/y coordinates). However, DNFs do not scale well to much higher dimensions; while this encourages an interpretable and biophysically-grounded approach, it constrains modelling of high-dimensional problems and requires well-motivated theoretical commitments about which control variables to model.
 
 A longer-term aim is to integrate PyPhonPlan with an extended Task Dynamic Application (TADA) architecture \cite{nam-etal2004}, enabling the use of gestural scores as inputs to the DNF and providing time-varying targets to the full TADA articulatory model. State feedback control is another important frontier; models such as FACTS \cite{parrell-etal2019} incorporate feedback into the task dynamic framework, while DNF \cite{chaturvedi-shaw2025} and other dynamical \cite{tilsen2022} architectures for feedback monitoring also show promise. Finally, the coupling of speaker-listener DNFs will facilitate new agent-based models of interactive speech dynamics, with the advantage of inherently dynamic and rich phonetic representations. For example, exemplar models of speech processing tend towards static phonetic representations, where memory retrieval and execution are instantaneous \cite{pierrehumbert2001}. In contrast, the DNF architecture explicitly models the dynamics of memory, perception and production, with dynamics specified at every scale.
 
