@@ -7,6 +7,7 @@ Supports N named fields with inter-field coupling. Field types:
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field as dc_field
 
 import numpy as np
@@ -175,9 +176,10 @@ class FieldSystem:
         weight : float
             Coupling strength.
         sigmoid : bool
-            If True (default), couple via sigmoid(u_source). If False,
-            couple via raw u_source. Memory sources always use raw coupling
-            regardless of this setting.
+            If True (default), couple via sigmoid(u_source) -- the standard
+            dynamic-field convention. If False, couple via raw u_source
+            (linear coupling, as used for perception in the paper's Eq. 8).
+            Memory sources always use raw coupling regardless of this setting.
         """
         self._couplings.append(_Coupling(source, target, weight, use_sigmoid=sigmoid))
 
@@ -261,6 +263,8 @@ class FieldSystem:
             ``np.random.default_rng()``.
         """
         n = self.n_x
+        if dt < 1 or dt != int(dt):
+            raise ValueError("dt must be a positive integer (fields evolve on integer time steps).")
 
         self.time = np.arange(t_start, t_end + dt, dt)
         n_steps = len(self.time)
@@ -282,20 +286,28 @@ class FieldSystem:
 
         noise_scale = noise * np.sqrt(dt) if noise > 0 else 0.0
         if noise_scale > 0 and rng is None:
+            warnings.warn(
+                "noise > 0 with rng=None: results are not reproducible. "
+                "Pass rng=np.random.default_rng(seed) for a reproducible run.",
+                stacklevel=2,
+            )
             rng = np.random.default_rng()
         gate_latched = {name: False for name in self._field_order}
 
         for i in range(1, n_steps):
-            t = self.time[i - 1]
-            nearest_t = round(t)
+            nearest_t = round(self.time[i - 1])
+            # Snapshot the previous state so every field's update reads the same
+            # (old) neighbour states: a simultaneous (Jacobi) Euler step, so the
+            # result does not depend on field registration order.
+            prev = {name: state[name].copy() for name in self._field_order}
 
             for name in self._field_order:
                 spec = self._fields[name]
-                u = state[name]
+                u = prev[name]
 
                 if spec.field_type == "standard":
                     s = self._sum_inputs_at(name, nearest_t)
-                    coupling = self._get_couplings_for(name, state)
+                    coupling = self._get_couplings_for(name, prev)
                     gu = sigmoid(u, spec.sigmoid_beta, spec.sigmoid_threshold)
                     kernel_term = self._dx * convolve(gu, spec.kernel)
                     if spec.gamma_gated:
@@ -311,7 +323,7 @@ class FieldSystem:
                         new_u = np.minimum(new_u, spec.sigmoid_threshold)
 
                 elif spec.field_type == "memory":
-                    source_u = state[spec.source_field]
+                    source_u = prev[spec.source_field]
                     source_spec = self._fields[spec.source_field]
                     gu_source = sigmoid(source_u, source_spec.sigmoid_beta, source_spec.sigmoid_threshold)
                     dudt = np.where(
