@@ -67,7 +67,7 @@ src/pyphonplan/
     targets/
         targets.py       Targets (target extraction + peak tracking)
     taskdynamics/
-        solver.py        Gesture, solve_task_dynamics
+        solver.py        Gesture, TaskDynamics
     viz/
         field_plots.py   plot_field_heatmap, plot_field_surface, plot_inputs, plot_kernel, plot_sigmoid
         target_plots.py  plot_target_activations, plot_peak_activation
@@ -82,7 +82,7 @@ src/pyphonplan/
 - **`FieldSystem`** — N coupled fields with between-field coupling. Supports standard fields and memory fields. Features include:
   - Gamma gating (`gamma_gated=True`): latches self-excitation off until direct input arrives, preventing coupled fields from triggering involuntary peaks.
   - Sigmoid or raw coupling (`sigmoid=False`): raw coupling passes activation values directly, useful when sigmoid output at resting level is too small for effective coupling.
-  - Memory persistence across successive `solve()` calls for updating memory dyamics.
+  - Memory persistence across successive `solve()` calls for updating memory dynamics.
   - `reset()` and `clear_inputs()` for managing state between simulations.
 
 ### Target extraction
