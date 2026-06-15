@@ -55,9 +55,9 @@ def interaction_kernel(
     x : np.ndarray
         Spatial array (typically from make_kernel_x).
     c_exc : float
-        Excitatory strength.
+        Excitatory strength (integrated area of the excitatory Gaussian).
     c_inh : float
-        Inhibitory strength.
+        Inhibitory strength (integrated area of the inhibitory Gaussian).
     c_global : float
         Global inhibition constant.
     sigma_exc : float
@@ -72,10 +72,10 @@ def interaction_kernel(
     np.ndarray
         Kernel values: excitation - inhibition - global.
     """
-    excite = (c_exc / np.sqrt(2 * np.pi * sigma_exc)) * np.exp(
+    excite = (c_exc / np.sqrt(2 * np.pi * sigma_exc**2)) * np.exp(
         -((x - mu) ** 2) / (2 * sigma_exc**2)
     )
-    inhibit = (c_inh / np.sqrt(2 * np.pi * sigma_inh)) * np.exp(
+    inhibit = (c_inh / np.sqrt(2 * np.pi * sigma_inh**2)) * np.exp(
         -((x - mu) ** 2) / (2 * sigma_inh**2)
     )
     return excite - inhibit - c_global
