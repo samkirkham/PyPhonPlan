@@ -107,10 +107,11 @@ class FieldSystem:
         source_field : str or None
             Name of the field whose sigmoid drives memory update.
         gamma_gated : bool
-            If True, the self-excitation kernel is latched off until direct input
-            arrives (s > 0). The latch stays open while activation exceeds
-            threshold, and activation is clamped at threshold when the latch
-            is closed.
+            If True, activation is clamped at threshold (it cannot exceed it)
+            until a direct input arrives (s > 0); the gate then latches open
+            while activation stays above threshold. Coupling alone can shape
+            sub-threshold activation but cannot trigger a supra-threshold peak
+            (paper Eq. 9).
         """
         if field_type == "memory":
             if source_field is None:
