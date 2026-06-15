@@ -63,9 +63,11 @@ def _build_blended_params(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Build per-timestep blended stiffness, target, and damping arrays.
 
-    When multiple gestures overlap, their parameters are blended via
-    alpha-weighted averaging. When no gesture is active, neutral
-    attractor parameters apply.
+    When multiple gestures overlap, stiffness and target are blended via
+    alpha-weighted averaging; damping is reconstructed from the blended
+    stiffness and the alpha-weighted damping ratio, preserving critical
+    damping when the active gestures are critically damped. When no gesture
+    is active, neutral attractor parameters apply.
     """
     n = len(time)
     neutral_damping = 2.0 * np.sqrt(neutral_stiffness)
@@ -77,7 +79,7 @@ def _build_blended_params(
     weight_sum = np.zeros(n)
     k_sum = np.zeros(n)
     target_sum = np.zeros(n)
-    damping_sum = np.zeros(n)
+    zeta_sum = np.zeros(n)  # alpha-weighted damping ratio
 
     for g in gestures:
         if g.alpha <= 0:
@@ -86,13 +88,17 @@ def _build_blended_params(
         weight_sum[active] += g.alpha
         k_sum[active] += g.k * g.alpha
         target_sum[active] += g.target * g.alpha
-        damping_sum[active] += g.damping * g.alpha  # type: ignore[operator]  # __post_init__ guarantees non-None
+        zeta_sum[active] += (g.damping / (2.0 * np.sqrt(g.k))) * g.alpha  # type: ignore[operator]  # __post_init__ guarantees non-None
 
     active_mask = weight_sum > 0
     if np.any(active_mask):
         blended_k[active_mask] = k_sum[active_mask] / weight_sum[active_mask]
         blended_target[active_mask] = target_sum[active_mask] / weight_sum[active_mask]
-        blended_damping[active_mask] = damping_sum[active_mask] / weight_sum[active_mask]
+        # Reconstruct damping from the blended stiffness and damping ratio so
+        # the oscillator stays critically damped when its active gestures are;
+        # averaging absolute damping across overlapping gestures does not.
+        zeta = zeta_sum[active_mask] / weight_sum[active_mask]
+        blended_damping[active_mask] = 2.0 * zeta * np.sqrt(blended_k[active_mask])
 
     return blended_k, blended_target, blended_damping
 
