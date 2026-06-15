@@ -21,6 +21,7 @@ def plot_field_heatmap(
     inset: bool = False,
     colorbar: bool = True,
     activation_time: bool = True,
+    peak_contrast: float = 1.0,
     time_step: int | None = None,
     suppress_labels: bool = False,
     inset_box: bool = False,
@@ -51,6 +52,10 @@ def plot_field_heatmap(
         If True, show colorbar.
     activation_time : bool
         If True, show threshold crossing line.
+    peak_contrast : float
+        Minimum gap between the peak and the field floor for the peak
+        trajectory to be drawn at a given time step. Suppresses the overlay
+        where the field is flat (no focused peak).
     time_step : int or None
         Time index for inset/box. If None, uses final time step.
     suppress_labels : bool
@@ -102,7 +107,7 @@ def plot_field_heatmap(
         peak_activation_values = u[peak_indices, np.arange(u.shape[1])]
         min_activation_values = np.min(u, axis=0)
         contrast = peak_activation_values - min_activation_values
-        has_peak = (peak_activation_values > threshold) & (contrast > 1.0)
+        has_peak = (peak_activation_values > threshold) & (contrast > peak_contrast)
         peaks_above = np.where(has_peak, peak_locations, np.nan)
         if crossing_idx is not None:
             peaks_above[:crossing_idx] = np.nan
