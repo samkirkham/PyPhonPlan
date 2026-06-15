@@ -14,29 +14,31 @@ def sigmoid(x: np.ndarray, beta: float = 1.5, threshold: float = 0.0) -> np.ndar
 def make_kernel_x(x: np.ndarray, expand: float = 3.0) -> np.ndarray:
     """Create expanded spatial array for kernel computation.
 
-    Uses centre-based expansion so it works correctly for non-symmetric
-    ranges (e.g. [100, 500] rather than [-10, 10]).
+    The kernel is sampled at the same spacing as the field (``x[1] - x[0]``),
+    so that ``dx * convolve(g, kernel)`` is a consistent Riemann approximation
+    of the interaction integral. Uses centre-based expansion so it works
+    correctly for non-symmetric ranges (e.g. [100, 500] rather than [-10, 10]).
 
     Parameters
     ----------
     x : np.ndarray
-        Original spatial array of the field.
+        Original spatial array of the field (regularly spaced).
     expand : float
         Expansion factor for kernel range.
 
     Returns
     -------
     np.ndarray
-        Expanded spatial array with int(len(x) * expand) points.
+        Spatial array centred on the field, spaced at the field's dx and
+        spanning +/- expand * half-width (odd length).
     """
+    if x.size < 2 or expand <= 0:
+        raise ValueError("make_kernel_x requires len(x) >= 2 and expand > 0.")
+    dx = x[1] - x[0]
     x_center = (x.max() + x.min()) / 2.0
-    half_width = (x.max() - x.min()) / 2.0
-    half_width_expanded = half_width * expand
-    return np.linspace(
-        x_center - half_width_expanded,
-        x_center + half_width_expanded,
-        int(len(x) * expand),
-    )
+    half_width_expanded = (x.max() - x.min()) / 2.0 * expand
+    n_half = int(np.ceil(half_width_expanded / dx))
+    return x_center + dx * np.arange(-n_half, n_half + 1)
 
 
 def interaction_kernel(
@@ -84,7 +86,8 @@ def interaction_kernel(
 def convolve(signal: np.ndarray, kernel: np.ndarray, fft: bool = True) -> np.ndarray:
     """Convolve signal with kernel, returning output of len(signal).
 
-    Uses scipy.signal.fftconvolve by default for speed.
+    Uses scipy.signal.fftconvolve by default for speed. Both paths return the
+    window centred on the signal (the kernel may be longer than the signal).
 
     Parameters
     ----------
@@ -96,12 +99,10 @@ def convolve(signal: np.ndarray, kernel: np.ndarray, fft: bool = True) -> np.nda
         If True (default), use FFT-based convolution.
     """
     if fft:
-        c = fftconvolve(signal, kernel, mode="same")
-    else:
-        c = np.convolve(signal, kernel, mode="same")
-    if len(c) == len(signal):
-        return c
-    else:
-        diff = len(c) - len(signal)
-        trim = diff // 2
-        return c[trim : trim + len(signal)]
+        # fftconvolve 'same' is centred on the first argument (the signal).
+        return fftconvolve(signal, kernel, mode="same")
+    # np.convolve 'same' centres on the longer array, so take the signal-centred
+    # window from the full convolution to match the fft path.
+    c = np.convolve(signal, kernel, mode="full")
+    start = (len(c) - len(signal)) // 2
+    return c[start : start + len(signal)]
