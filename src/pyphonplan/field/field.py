@@ -6,6 +6,7 @@ Implements the Amari equation for a 1D dynamic field:
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -143,6 +144,8 @@ class DynamicField:
         """
         if self.kernel is None:
             raise RuntimeError("Call set_kernel() before solve().")
+        if dt < 1 or dt != int(dt):
+            raise ValueError("dt must be a positive integer (the field evolves on integer time steps).")
 
         if y0 is None:
             y0 = h * np.ones(len(self.x))
@@ -155,6 +158,11 @@ class DynamicField:
         activation[:, 0] = u
         noise_scale = noise * np.sqrt(dt) / tau if noise > 0 else 0.0
         if noise_scale > 0 and rng is None:
+            warnings.warn(
+                "noise > 0 with rng=None: results are not reproducible. "
+                "Pass rng=np.random.default_rng(seed) for a reproducible run.",
+                stacklevel=2,
+            )
             rng = np.random.default_rng()
 
         for i in range(1, n_steps):
