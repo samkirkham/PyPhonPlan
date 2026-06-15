@@ -97,10 +97,13 @@ class Targets:
             if not np.any(above):
                 continue
 
-            crossings = np.diff(above.astype(int)) > 0  # 0→1 transitions only
-            if not np.any(crossings):
-                continue
-            onset_idx = int(np.argmax(crossings)) + 1
+            if above[0]:
+                onset_idx = 0  # already above threshold at the first sample
+            else:
+                crossings = np.diff(above.astype(int)) > 0  # 0→1 transitions only
+                if not np.any(crossings):
+                    continue
+                onset_idx = int(np.argmax(crossings)) + 1
             trace.onset_idx = onset_idx
             trace.onset_time = float(self.time[onset_idx])
 
@@ -146,6 +149,9 @@ class Targets:
             activation_peak = activation_peak[mask]
             time = self.time[mask]
         else:
+            # Below threshold the field is ~flat, so argmax returns x[0]: mark
+            # those peak positions NaN rather than reporting a spurious x_min.
+            parameter_peak = np.where(activation_peak >= 0, parameter_peak, np.nan)
             time = self.time
 
         if plot:
