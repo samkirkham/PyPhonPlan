@@ -8,7 +8,7 @@
 %
 % CAMERA-READY: Use the following command for the camera-ready version, one
 % affiliation per line:
-\documentclass[]{Interspeech}
+\documentclass[cameraready]{Interspeech}
 % *==================================================================================*
 
 
@@ -31,10 +31,14 @@
 
 %==================================================================================
 % Authors, affiliations, emails
-% In camera-ready mode, these details are loaded from author-info.tex -- this has been gitignored to avoid inclusion of author information in review version, but removing author-info.tex from .gitignore will inject author information when [cameraready] flag is set to True.
-\ifcameraready
-    \input{author-info}
-\fi
+\author[orcid=0000-0003-4469-1512]{Sam}{Kirkham}
+
+\address{
+    Phonetics Laboratory, Lancaster University, United Kingdom
+}
+
+\email{s.kirkham@lancaster.ac.uk}
+
 
 %==================================================================================
 
@@ -62,19 +66,19 @@
 
 \section{Introduction}
 
-The production of speech appears at first to be unfathomably complex. Speakers must navigate the precise temporal coordination of a high-dimensional neuromuscular space with many degrees-of-freedom, with the ultimate goal of shaping a channel of moving air to achieve meaningful action in a rich social environment. Despite this apparent complexity, there is abundant evidence across biological motor control that organisms simplify the control of high-dimensional movement by constraining it to a smaller number of functionally relevant variables \cite{bernstein1967, haken-etal1985}. In the domain of speech production, one of the most popular models of these functionally relevant variables is task dynamics \cite{fowler1980, kelso-etal1986, saltzman-munhall1989, browman-goldstein1992, byrd-saltzman1998, iskarous2017}. Task dynamics hypothesizes that an abstract dynamical force called a \textit{gesture} drives low-dimensional \textit{tract variables} that control geometric properties of the vocal tract, such as lip aperture (LA) or tongue tip constriction degree (TTCD). Tract variables are the coordinate system in which the articulatory goals of speech are defined, and are achieved by flexibly reconfiguring groups of articulators (tongue tip, lower lip, jaw) to meet the ongoing demands of speech.
+The production of speech appears at first to be unfathomably complex. Speakers must navigate the precise temporal coordination of a high-dimensional neuromuscular space with many degrees-of-freedom, with the ultimate goal of shaping a channel of moving air to achieve meaningful action in a rich social environment. Despite this apparent complexity, there is abundant evidence across biological motor control that organisms simplify the control of high-dimensional movement by constraining it to a smaller number of functionally relevant variables \cite{bernstein1967, haken-etal1985}. In the domain of speech production, one of the most popular models of these functionally relevant variables is task dynamics \cite{fowler1980, kelso-etal1986, saltzman-munhall1989, browman-goldstein1992, byrd-saltzman1998, iskarous2017}. Task dynamics hypothesizes that an abstract dynamical force called a \textit{gesture} drives low-dimensional \textit{tract variables} that control geometric properties of the vocal tract, such as lip aperture (LA) or tongue tip constriction degree (TTCD). Tract variables are a hypothesized coordinate system in which articulatory goals are defined, and are achieved by flexibly reconfiguring groups of articulators (tongue tip, lower lip, jaw) to meet the ongoing demands of speech.
 
-A fundamental assumption in task dynamics is that tract variables are governed by point attractor dynamics, where a gesture drives a tract variable toward an equilibrium position. However, in conventional task dynamic models, these target values are stipulated as invariant parameters, with no intrinsic mechanism for learning, memory or sensory influences on speech production. A major development in this respect is the integration of dynamic neural fields (DNFs) for movement planning with task dynamic theory \cite{kirov-gafos2007, tilsen2007}. A dynamic neural field (DNF) is a low-dimensional representation of a functional neural population, which is defined over a metric variable for a sensory or movement parameter \cite{erlhagen-schoener2002, schoener-etal2016}. The field's dynamics evolve over time under the influence of sensory inputs, memory, and field-internal dynamics \cite{schutte-etal2003, schneegans-etal2016, simmering-spencer2008, spencer-etal2025}.
+A fundamental assumption in task dynamics is that tract variables are governed by point attractor dynamics, where a gesture drives a tract variable toward an equilibrium position. However, in conventional task dynamic models, these target values are stipulated as invariant parameters, with no intrinsic mechanism for learning, memory or sensory influences on speech production. A major development in this respect is the integration of dynamic neural fields for movement planning with task dynamic theory \cite{kirov-gafos2007, tilsen2007}. A dynamic neural field (DNF) is a low-dimensional representation of a functional neural population, which is defined over a metric variable for a sensory or movement parameter \cite{erlhagen-schoener2002, schoener-etal2016}. The field's dynamics evolve over time under the influence of sensory inputs, memory, and field-internal dynamics \cite{schneegans-etal2016, simmering-spencer2008}.
 
-The last decade has witnessed an explosion of DNF models for speech planning and phonetic processes \cite{kirov-gafos2007, tilsen2007, roon-gafos2016, iskarous2016, tilsen2019, harper2021, shaw-tang2023, stern-shaw2023, kirkham-strycharczuk2024, kirkham-etal2025, chaturvedi-shaw2025}. While much of this work has focused on relatively low-level phonetic variation, there is increasing evidence that DNFs can also model more traditionally `phonological' phenomena \cite{shaw2025}, as well as lexical meaning \cite{stern-pinango2026}. An excellent review of DNF models for speech communication can be found in \cite{stern2025}. In light of the current landscape, there is a need to develop modern computational frameworks that make this integration of dynamic neural fields and task dynamics accessible to a broader community. To address this gap, we introduce PyPhonPlan, a Python toolkit for simulating phonetic planning using coupled dynamic neural fields and task dynamic equations. The toolkit provides modular components for defining activation fields, coupling architectures, gestural inputs, and task dynamic simulations. This allows researchers to instantiate diverse planning architectures within a common computational framework that is tailored towards speech communication research. The major contributions of this paper are:
+The last decade has produced a number of DNF models for speech planning \cite{kirov-gafos2007, tilsen2007, roon-gafos2016, iskarous2016, tilsen2019, harper2021, shaw-tang2023, stern-shaw2023, kirkham-strycharczuk2024, kirkham-etal2025, chaturvedi-shaw2025}. While much of this work has focused on relatively low-level phonetic variation, there is increasing evidence that DNFs can also model more traditionally `phonological' phenomena \cite{shaw2025}, as well as lexical meaning \cite{stern-pinango2026}. An excellent review of DNF models for speech communication can be found in \cite{stern2025}. In light of the current landscape, there is a need to develop modern computational frameworks that make this integration of dynamic neural fields and task dynamics accessible to a broader community. To address this gap, we introduce PyPhonPlan, a Python toolkit for simulating phonetic planning using coupled dynamic neural fields and task dynamic equations. The toolkit provides modular components for defining activation fields, coupling architectures, gestural inputs, and task dynamic simulations. This allows researchers to instantiate diverse planning architectures within a common computational framework that is tailored towards speech communication research. Existing DNF frameworks, such as COSIVINA \cite{schoener-etal2016} and its Python port \cite{schneegans2021}, are general-purpose simulators, whereas PyPhonPlan directly integrates DNFs with task dynamic models of articulatory control, thus providing a unified planning-to-production framework. The major contributions of this paper are:
 
 \begin{enumerate}
-    \item We present an open-source Python toolkit for simulating phonetic planning using coupled dynamic neural fields and task dynamic equations.
-    \item We advance a modular architecture that permits flexible model development, extension and customization, including multi-layer fields, coupling mechanisms, memory fields, and tract variable simulations.
-    \item We release the toolkit with executable examples and code notebooks to promote reproducibility, extensibility, and cumulative computational research in speech communication.
+    \item An open-source Python toolkit for simulating phonetic planning using coupled DNFs and task dynamics.
+    \item A modular architecture for flexible model development and customization, including multi-layer fields, coupling mechanisms, memory fields, and tract variable simulations.
+    \item Examples and code notebooks to promote reproducibility, extensibility, and cumulative computational research.
 \end{enumerate}
 
-The software and code notebooks are available at the following GitHub repository (anonymized for peer review):~\url{https://anonymous.4open.science/r/PyPhonPlan-Interspeech26/}. The rest of this paper outlines the conceptual, mathematical and computational implementation of model components, before illustrating its functionality via a three-layer perception/planning/memory model of interactive speech.
+The rest of this paper outlines the model components, before illustrating its functionality via a highly-simplified three-layer perception/planning/memory model of interactive speech. All software and examples are available on GitHub at:\\\url{https://github.com/samkirkham/PyPhonPlan}. 
 
 
 
@@ -89,7 +93,7 @@ The dynamics of a one-dimensional articulatory or acoustic control variable can 
 \begin{multline}
 \tau \dot{u}(x,t) = -u(x,t) + h + s(x,t)
 \\
-+ \int k(x-x') g(u(x',t))dx' + q\xi(x,t)
++ \int k(x-x') g(u(x',t))dx' + q\xi(x,t),
 \label{dnf}
 \end{multline}
 
@@ -107,7 +111,7 @@ where $\tau$ dictates the rate of field evolution and $u(x,t)$ is time-dependent
 
 \subsection{Inputs}
 
-The field in (\ref{dnf}) has its own intrinsic dynamics, but without non-zero sensory input the field's dynamics will converge to a stable, sub-threshold resting level. Inputs to the DNF drive activation away from the resting level and excite localized areas of the field. Inputs can represent task-related input (i.e.~responding to an experimental prompt or cue), retrieval of a speech planning representation from memory, or sensory/perceptual inputs (i.e.~speech perception). An input $s(x,t)$ is defined as a Gaussian distribution over a parameter $x$ with amplitude $a$, centroid $p$ and width $w$,
+The field in (\ref{dnf}) has its own intrinsic dynamics, but without sensory input the field's dynamics will converge to a sub-threshold resting level. Inputs to the DNF drive activation away from the resting level and excite localized areas of the field. Inputs can represent task-related input (i.e.~responding to an experimental prompt or cue), retrieval of a speech planning representation from memory, or sensory/perceptual inputs (i.e.~speech perception). An input $s(x,t)$ is defined as a distribution over a parameter $x$ with amplitude $a$, centroid $p$ and width $w$,
 
 \begin{equation}
 s(x,t) = \sum_{i} a_{i} \exp \left[ - \frac{(x-p_{i})^2}{2w^2_{i}} \right].
@@ -122,9 +126,9 @@ This defines gestural inputs as inherently distributional, in contrast to the in
 A key property of DNFs is that field sites interact with one another:~nearby sites excite each other while distant sites inhibit each other. This interaction profile has two key consequences:~it stabilizes peaks of activation once they form (through local self-excitation), and it enables competition between peaks, where activation of one peak will inhibit others. These dynamics are captured by the interaction kernel $k(x-x')$, which takes a `Mexican hat' profile, with local excitation $c_{\text{excite}}$ surrounded by lateral inhibition $c_{\text{inhibit}}$, plus a global inhibition term $c_{\text{global}}$:
 
 \begin{multline}
-k(x - x') = \frac{c_{\text{excite}}}{\sqrt{2 \pi \sigma_{\text{excite}}}} \exp \left[ -\frac{(x-x')^2}{2 \sigma^2_{\text{excite}}} \right] 
+k(x - x') = \frac{c_{\text{excite}}}{\sqrt{2 \pi \sigma^2_{\text{excite}}}} \exp \left[ -\frac{(x-x')^2}{2 \sigma^2_{\text{excite}}} \right] 
 \\
-- \frac{c_{\text{inhibit}}}{\sqrt{2 \pi \sigma_{\text{inhibit}}}} \exp \left[ -\frac{(x-x')^2}{2 \sigma^2_{\text{inhibit}}} \right] - c_{\text{global}}
+- \frac{c_{\text{inhibit}}}{\sqrt{2 \pi \sigma^2_{\text{inhibit}}}} \exp \left[ -\frac{(x-x')^2}{2 \sigma^2_{\text{inhibit}}} \right] - c_{\text{global}}.
 \label{kernel}
 \end{multline}
 
@@ -132,7 +136,7 @@ k(x - x') = \frac{c_{\text{excite}}}{\sqrt{2 \pi \sigma_{\text{excite}}}} \exp \
 The interaction kernel is gated by a sigmoid function,
 
 \begin{equation}
-g(u) = \frac{1}{1+\exp (-\beta (u-\alpha))}
+g(u) = \frac{1}{1+\exp (-\beta (u-\alpha))},
 \label{dnf_sigmoid}
 \end{equation}
 
@@ -160,7 +164,7 @@ In addition to the standard fields described above, PyPhonPlan implements memory
     & u(x,t) > \alpha \\[0.5em]
     \frac{1}{\tau_{\text{decay}}} [-u_{\text{mem}}(x,t)], 
     & u(x,t) \leq \alpha
-\end{cases}
+\end{cases}.
 \label{eq:memory}
 \end{equation}
 
@@ -181,7 +185,7 @@ In multi-layer models, fields can be coupled with strength $c$, weighting the in
     1 & \text{if } s_{\text{planning}}(x, t) > 0 \text{ for any } x, \\
     \gamma(t - \Delta t) & \text{if } u_{\text{planning}}(x, t) > \alpha \text{ for any } x, \\
     0 & \text{otherwise}
-\end{cases}
+\end{cases}.
 \label{eq:gating}
 \end{equation}
 
@@ -198,7 +202,7 @@ m\ddot{x} + b\dot{x} + k(x - x^*(t)) = 0.
 Following \cite{tilsen2019, kirkham-strycharczuk2024, shaw2025}, we derive the tract variable's time-varying target $x^*(t)$ from the planning DNF. The spatial position $x$ corresponding to peak activation in $u$ from the planning field at each time step is taken as the planned target value as in (\ref{eq:max}). An alternative formulation is to use a single constant value for $x^*(t)$, which can be derived from identifying the parameter value that corresponds to a peak activation plateau.
 
 \begin{equation}
-x^*(t)= \arg\max_x u(x,t)
+x^*(t)= \arg\max_x u(x,t).
 \label{eq:max}
 \end{equation}
 
@@ -226,7 +230,7 @@ We define a three-layer architecture of perception, planning and memory fields. 
 \begin{multline}
 \tau_{\text{perception}}\dot{u}_{\text{perception}}(x,t)  = -u_{\text{perception}}(x,t) + h + s_{\text{perception}}(x,t)
 \\
-+ \int z(x-x') g(u_{\text{perception}}(x',t))dx' + q\xi(x,t)
++ \int z(x-x') g(u_{\text{perception}}(x',t))dx' + q\xi(x,t),
 \label{eq:perception}
 \end{multline}
 
@@ -239,7 +243,7 @@ The memory field is implemented exactly as described in Section \ref{memory}, so
 \\
 + c_{\text{memory}} u_{\text{memory}}(x,t) + c_{\text{response}}s_{\text{response}}(x,t)
 \\
-+ \int k(x-x') g(u(x',t))dx' + q\xi(x,t)
++ \int k(x-x') g(u(x',t))dx' + q\xi(x,t),
 \label{eq:planning}
 \end{multline}
 
@@ -260,7 +264,7 @@ Human speakers typically show phonetic convergence towards the interlocutor's vo
 
 
 \subsection{Simulation results}
-Figure \ref{fig:sim} shows simulation results. The left panel shows the location of peak activation measured during the response plateau across all trials. During baseline, the planning peak is at the response position ($x = 3$). During shadowing, the auditory prompt ($x = 1$) induces a strong perception input, causing the speaker to heavily converge towards the perceived token ($x = 1.58$ on S1), which persists throughout shadowing. The washout planning peak retains some of this convergence effect, shifting $-0.26$ units from baseline ($x = 2.74$). This shift is driven by accumulated memory traces from shadowing trials, which bias the planning field. The right panel shows the corresponding tract variable trajectories for baseline and washout trials, with targets derived from the plateau peak positions. The washout trajectory reaches a lower target position than baseline, demonstrating how field-level convergence propagates to articulatory output. While only a very simple example, this demonstrates how the model architecture predicts interactional phonetic phenomena as emergent from the coupled dynamics of speech planning, perception and memory. 
+Figure \ref{fig:sim} shows simulation results. The left panel shows the location of peak activation measured during the response across all trials. During baseline, the planning peak settles at the response position ($x = 3$). During shadowing, the auditory prompt ($x = 1$) induces a strong perception input that draws the planning peak toward the perceived token ($x = 1.56$ on S1), a bias that persists across shadowing trials. The washout planning peak retains some of this convergence effect, shifting $-0.29$ units from baseline ($x = 2.71$). This shift is driven by accumulated memory traces from shadowing trials, which bias the planning field. The right panel shows the corresponding tract variable trajectories for baseline and washout trials, with targets derived from the plateau peak positions. The washout trajectory reaches a lower target position than baseline, demonstrating how field-level convergence propagates to articulatory output. This is a simple, artificial example for the purpose of illustration; accommodation is rarely one-shot and of such large magnitude. Yet it illustrates how the model architecture predicts interactional phonetic phenomena as emergent from the coupled dynamics of speech planning, perception and memory. 
 
 
 \section{Discussion}
@@ -275,10 +279,13 @@ A longer-term aim is to integrate PyPhonPlan with an extended Task Dynamic Appli
 
 In conclusion, PyPhonPlan is an open-source toolkit for building flexible models of phonetic planning using coupled dynamic neural fields and task dynamics. It provides a modular architecture that supports reproducible experimentation and transparent model development, thereby advancing a framework for cumulative computational research in speech communication.
 
+\section{Acknowledgments}
 
-%\section{Acknowledgments}
+S.K. was funded by AHRC fellowship AH/Y002822/1 and The Royal Society grant APX\textbackslash R1\textbackslash 251102, the latter of which was also supported by The Leverhulme Trust. 
 
-%XXX was funded by XXX fellowship XXX and XXX grant XXX, the latter of which was also supported by the XXX. 
+\section{Generative AI Use Disclosure}
+
+Anthropic's Claude Code (Opus 4.6) was used for debugging and automated testing of the accompanying software, with solutions subsequently verified by the author. No Generative AI was used in the writing of the manuscript.
 
 
 \bibliographystyle{IEEEtran}
