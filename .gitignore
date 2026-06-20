@@ -25,6 +25,7 @@ wheels/
 *.run.xml
 *-blx.bib
 paper/*.pdf
+paper/bibliography.bib
 
 # don't track tests for now
 tests/
